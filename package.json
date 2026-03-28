@@ -1,5 +1,5 @@
 {
-  "name": "react-native-backstage",
+  "name": "rn-backstage",
   "version": "1.0.0",
   "description": "A zero-dependency developer/QA debug panel for React Native apps",
   "main": "lib/commonjs/index",
@@ -33,14 +33,15 @@
     "state-inspector"
   ],
   "repository": "https://github.com/junocs/react-native-backstage",
-  "author": "Juno Sheridan <juno.sheridan@gmail.com> (https://junosheridan.github.io)",
+  "author": "Juno Sheridan <juno.sheridan@gmail.com> (https://github.com)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/junocs/react-native-backstage/issues"
   },
   "homepage": "https://github.com/junocs/react-native-backstage#readme",
   "publishConfig": {
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
   },
   "devDependencies": {
     "@types/react": "~18.3.0",

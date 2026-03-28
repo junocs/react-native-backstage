@@ -1,4 +1,4 @@
-# react-native-backstage
+# rn-backstage
 
 A zero-dependency developer/QA debug panel for React Native apps. Inspect device info, view state trees, monitor console logs, and trigger custom actions — all from a sleek in-app panel.
 
@@ -16,9 +16,9 @@ A zero-dependency developer/QA debug panel for React Native apps. Inspect device
 ## Installation
 
 ```sh
-npm install react-native-backstage
+npm install rn-backstage
 # or
-yarn add react-native-backstage
+yarn add rn-backstage
 ```
 
 No additional native dependencies required!
@@ -26,7 +26,7 @@ No additional native dependencies required!
 ## Usage
 
 ```tsx
-import { Backstage } from 'react-native-backstage'
+import { Backstage } from 'rn-backstage'
 
 export default function App() {
   return (
@@ -41,7 +41,7 @@ export default function App() {
           { title: 'Logout', onPress: handleLogout, destructive: true },
           { title: 'Clear Cache', onPress: clearCache },
         ]}
-        onCopyLogs={(logs) => Clipboard.setString(logs)}
+        onCopyLogs={logs => Clipboard.setString(logs)}
       />
     </>
   )
@@ -50,28 +50,28 @@ export default function App() {
 
 ## Props
 
-| Prop | Type | Default | Description |
-|---|---|---|---|
-| `visible` | `boolean` | `true` | Show/hide the floating pill |
-| `appVersion` | `string` | `undefined` | App version to display |
-| `buildNumber` | `string` | `undefined` | Build number |
-| `bundleId` | `string` | `undefined` | Bundle identifier |
-| `deviceInfo` | `AppInfoItem[]` | `[]` | Additional device/app info rows |
-| `state` | `object` | `undefined` | State tree to inspect |
-| `quickActions` | `QuickAction[]` | `[]` | Custom action buttons |
-| `maxLogs` | `number` | `500` | Maximum logs to retain |
-| `logFilters` | `string[]` | `[]` | Messages to exclude from logs |
-| `onCopyLogs` | `(logs: string) => void` | `undefined` | Callback when copying logs |
-| `extraTabs` | `BackstageTab[]` | `[]` | Additional custom tabs |
-| `children` | `ReactNode` | `undefined` | Extra content in InfoTab |
+| Prop           | Type                     | Default     | Description                     |
+| -------------- | ------------------------ | ----------- | ------------------------------- |
+| `visible`      | `boolean`                | `true`      | Show/hide the floating pill     |
+| `appVersion`   | `string`                 | `undefined` | App version to display          |
+| `buildNumber`  | `string`                 | `undefined` | Build number                    |
+| `bundleId`     | `string`                 | `undefined` | Bundle identifier               |
+| `deviceInfo`   | `AppInfoItem[]`          | `[]`        | Additional device/app info rows |
+| `state`        | `object`                 | `undefined` | State tree to inspect           |
+| `quickActions` | `QuickAction[]`          | `[]`        | Custom action buttons           |
+| `maxLogs`      | `number`                 | `500`       | Maximum logs to retain          |
+| `logFilters`   | `string[]`               | `[]`        | Messages to exclude from logs   |
+| `onCopyLogs`   | `(logs: string) => void` | `undefined` | Callback when copying logs      |
+| `extraTabs`    | `BackstageTab[]`         | `[]`        | Additional custom tabs          |
+| `children`     | `ReactNode`              | `undefined` | Extra content in InfoTab        |
 
 ## Ref Methods
 
 ```tsx
 const ref = useRef<BackstageRef>(null)
 
-ref.current?.open()      // Open the panel
-ref.current?.close()     // Close the panel
+ref.current?.open() // Open the panel
+ref.current?.close() // Close the panel
 ref.current?.clearLogs() // Clear all captured logs
 ```
 
