@@ -9,6 +9,7 @@ A zero-dependency developer/QA debug panel for React Native apps. Inspect device
 - 🌳 **State tree inspector** — visualize Redux, Zustand, or any store state
 - 📋 **Console log viewer** — intercepts all console methods with search & filtering
 - 🌐 **Network inspector** — intercepts fetch & XMLHttpRequest with request/response details, headers, body, timing, and copy-as-cURL
+- 🎚 **Feature flag toggle** — render switches to toggle flags in real-time without restarting
 - ⚡ **Quick actions** — add custom buttons (logout, clear cache, etc.)
 - 🔌 **Extensible tabs** — add custom tabs for app-specific debugging tools
 - 🎨 **Dark glassmorphism UI** — beautiful, professional developer tool aesthetic
@@ -73,28 +74,47 @@ Each request shows:
   autoFilterNetworkLogs={true}
 />
 ```
+## Feature Flag Toggle
+
+Pass feature flags to render a dedicated **Flags** tab with toggle switches. The tab only appears when at least one flag is provided. Toggling calls your callback in real-time — no app restart needed.
+
+```tsx
+const [flags, setFlags] = useState([
+  { key: 'dark_mode', label: 'Dark Mode', value: true, description: 'Enable dark theme' },
+  { key: 'beta', label: 'Beta Features', value: false, description: 'Experimental features' },
+])
+
+<Backstage
+  featureFlags={flags}
+  onToggleFeatureFlag={(key, value) => {
+    setFlags(prev => prev.map(f => (f.key === key ? { ...f, value } : f)))
+  }}
+/>
+```
 
 ## Props
 
-| Prop                     | Type                     | Default     | Description                                     |
-| ------------------------ | ------------------------ | ----------- | ----------------------------------------------- |
-| `visible`                | `boolean`                | `true`      | Show/hide the floating pill                     |
-| `appVersion`             | `string`                 | `undefined` | App version to display                          |
-| `buildNumber`            | `string`                 | `undefined` | Build number                                    |
-| `bundleId`               | `string`                 | `undefined` | Bundle identifier                               |
-| `deviceInfo`             | `AppInfoItem[]`          | `[]`        | Additional device/app info rows                 |
-| `state`                  | `object`                 | `undefined` | State tree to inspect                           |
-| `quickActions`           | `QuickAction[]`          | `[]`        | Custom action buttons                           |
-| `maxLogs`                | `number`                 | `500`       | Maximum logs to retain                          |
-| `logFilters`             | `string[]`               | `[]`        | Messages to exclude from logs                   |
-| `onCopyLogs`             | `(logs: string) => void` | `undefined` | Callback when copying logs                      |
-| `enableNetworkInspector` | `boolean`                | `true`      | Enable/disable network request interception     |
-| `maxNetworkEntries`      | `number`                 | `500`       | Maximum network entries to retain               |
-| `maxNetworkBodySize`     | `number`                 | `65536`     | Max body size (bytes) to capture per request    |
-| `networkFilters`         | `string[]`               | `[]`        | URL substrings to exclude from capture          |
-| `autoFilterNetworkLogs`  | `boolean`                | `true`      | Auto-filter network callback logs from Logs tab |
-| `extraTabs`              | `BackstageTab[]`         | `[]`        | Additional custom tabs                          |
-| `children`               | `ReactNode`              | `undefined` | Extra content in InfoTab                        |
+| Prop                     | Type                          | Default     | Description                                     |
+| ------------------------ | ----------------------------- | ----------- | ----------------------------------------------- |
+| `visible`                | `boolean`                     | `true`      | Show/hide the floating pill                     |
+| `appVersion`             | `string`                      | `undefined` | App version to display                          |
+| `buildNumber`            | `string`                      | `undefined` | Build number                                    |
+| `bundleId`               | `string`                      | `undefined` | Bundle identifier                               |
+| `deviceInfo`             | `AppInfoItem[]`               | `[]`        | Additional device/app info rows                 |
+| `state`                  | `object`                      | `undefined` | State tree to inspect                           |
+| `quickActions`           | `QuickAction[]`               | `[]`        | Custom action buttons                           |
+| `featureFlags`           | `FeatureFlag[]`               | `[]`        | Feature flags with toggle switches              |
+| `onToggleFeatureFlag`    | `(key, val: boolean) => void` | `undefined` | Callback when a flag is toggled                 |
+| `maxLogs`                | `number`                      | `500`       | Maximum logs to retain                          |
+| `logFilters`             | `string[]`                    | `[]`        | Messages to exclude from logs                   |
+| `onCopyLogs`             | `(logs: string) => void`      | `undefined` | Callback when copying logs                      |
+| `enableNetworkInspector` | `boolean`                     | `true`      | Enable/disable network request interception     |
+| `maxNetworkEntries`      | `number`                      | `500`       | Maximum network entries to retain               |
+| `maxNetworkBodySize`     | `number`                      | `65536`     | Max body size (bytes) to capture per request    |
+| `networkFilters`         | `string[]`                    | `[]`        | URL substrings to exclude from capture          |
+| `autoFilterNetworkLogs`  | `boolean`                     | `true`      | Auto-filter network callback logs from Logs tab |
+| `extraTabs`              | `BackstageTab[]`              | `[]`        | Additional custom tabs                          |
+| `children`               | `ReactNode`                   | `undefined` | Extra content in InfoTab                        |
 
 ## Ref Methods
 

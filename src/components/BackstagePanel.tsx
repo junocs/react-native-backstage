@@ -13,10 +13,12 @@ import { TabBar } from './TabBar'
 import { InfoTab } from './InfoTab'
 import { LogsTab } from './LogsTab'
 import { NetworkTab } from './NetworkTab'
+import { FlagsTab } from './FlagsTab'
 import type {
   AppInfoItem,
   BackstageStyleOverrides,
   BackstageTab,
+  FeatureFlag,
   LogEntry,
   NetworkEntry,
   QuickAction,
@@ -35,6 +37,8 @@ interface BackstagePanelProps {
   deviceInfo?: AppInfoItem[]
   state?: Record<string, unknown>
   quickActions?: QuickAction[]
+  featureFlags?: FeatureFlag[]
+  onToggleFeatureFlag?: (key: string, value: boolean) => void
 
   // Logs tab props
   logs: LogEntry[]
@@ -55,13 +59,16 @@ interface BackstagePanelProps {
   children?: React.ReactNode
 }
 
-// ─── Built-in Tab Definitions ────────────────────────────────────────────────
+// ─── Built-in Tab Definitions ────────────────────────────────────────────
 
-const BUILT_IN_TABS = [
+const ALWAYS_ON_TABS = [
   { key: 'info', title: 'Info', icon: 'ℹ️' },
   { key: 'network', title: 'Network', icon: '🌐' },
-  { key: 'logs', title: 'Logs', icon: '📋' },
 ]
+
+const FLAGS_TAB = { key: 'flags', title: 'Flags', icon: '🎚' }
+
+const LOGS_TAB = { key: 'logs', title: 'Logs', icon: '📋' }
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -74,6 +81,8 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
   deviceInfo,
   state,
   quickActions,
+  featureFlags,
+  onToggleFeatureFlag,
   logs,
   onRefreshLogs,
   onCopyLogs,
@@ -87,9 +96,12 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState('info')
 
-  // Compose all tabs: built-in + extra
+  // Compose all tabs: built-in (conditionally including Flags) + extra
+  const hasFlags = featureFlags && featureFlags.length > 0
   const allTabs = [
-    ...BUILT_IN_TABS,
+    ...ALWAYS_ON_TABS,
+    ...(hasFlags ? [FLAGS_TAB] : []),
+    LOGS_TAB,
     ...extraTabs.map(t => ({ key: t.key, title: t.title, icon: t.icon })),
   ]
 
@@ -110,6 +122,13 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
           >
             {children}
           </InfoTab>
+        )
+      case 'flags':
+        return (
+          <FlagsTab
+            flags={featureFlags ?? []}
+            onToggle={onToggleFeatureFlag}
+          />
         )
       case 'network':
         return (

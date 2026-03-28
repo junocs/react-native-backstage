@@ -7,6 +7,7 @@ export type {
   BackstageStyleOverrides,
   BackstageTheme,
   QuickAction,
+  FeatureFlag,
   AppInfoItem,
   LogEntry,
   NetworkEntry,

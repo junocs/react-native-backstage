@@ -63,6 +63,19 @@ export interface QuickAction {
   testID?: string
 }
 
+// ─── Feature Flags ─────────────────────────────────────────────────────────
+
+export interface FeatureFlag {
+  /** Unique key for this flag */
+  key: string
+  /** Display label */
+  label: string
+  /** Current value */
+  value: boolean
+  /** Optional description shown below the label */
+  description?: string
+}
+
 // ─── Extensible Tabs ─────────────────────────────────────────────────────────
 
 export interface BackstageTab {
@@ -118,6 +131,12 @@ export interface BackstageProps {
 
   /** Custom action buttons in the Info tab */
   quickActions?: QuickAction[]
+
+  /** Feature flags to display with toggle switches */
+  featureFlags?: FeatureFlag[]
+
+  /** Callback when a feature flag is toggled */
+  onToggleFeatureFlag?: (key: string, value: boolean) => void
 
   /** Maximum number of logs to retain in memory. Default: 500 */
   maxLogs?: number

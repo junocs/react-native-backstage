@@ -30,6 +30,8 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
       deviceInfo,
       state,
       quickActions,
+      featureFlags,
+      onToggleFeatureFlag,
       maxLogs = DEFAULT_MAX_LOGS,
       logFilters,
       onCopyLogs,
@@ -169,6 +171,8 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
           deviceInfo={deviceInfo}
           state={state}
           quickActions={quickActions}
+          featureFlags={featureFlags}
+          onToggleFeatureFlag={onToggleFeatureFlag}
           logs={logs}
           onRefreshLogs={refreshLogs}
           onCopyLogs={onCopyLogs}

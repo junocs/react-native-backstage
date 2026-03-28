@@ -148,7 +148,7 @@ export const InfoTab: React.FC<InfoTabProps> = ({
         </View>
       )}
 
-      {/* ── Quick Actions Section ───────────────────────────────── */}
+      {/* ── Quick Actions Section ─────────────────────────────────────── */}
       {quickActions.length > 0 && (
         <View style={styles.section}>
           <SectionHeader title="QUICK ACTIONS" titleStyle={propStyles?.sectionTitleStyle} />

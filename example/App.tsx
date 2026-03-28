@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { Backstage } from 'react-native-backstage'
-import type { BackstageRef, BackstageTab } from 'react-native-backstage'
+import type { BackstageRef, BackstageTab, FeatureFlag } from 'react-native-backstage'
 
 // ─── Mock Data: Simulates a real app store ────────────────────────────────────
 
@@ -143,6 +143,39 @@ const envStyles = StyleSheet.create({
 export default function App() {
   const backstageRef = useRef<BackstageRef>(null)
   const [logCount, setLogCount] = useState(0)
+
+  // Feature flags state
+  const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>([
+    {
+      key: 'dark_mode',
+      label: 'Dark Mode',
+      value: true,
+      description: 'Enable dark theme across the app',
+    },
+    {
+      key: 'push_notifications',
+      label: 'Push Notifications',
+      value: true,
+      description: 'Receive push notifications for updates',
+    },
+    {
+      key: 'beta_features',
+      label: 'Beta Features',
+      value: false,
+      description: 'Enable experimental features in development',
+    },
+    {
+      key: 'maintenance_mode',
+      label: 'Maintenance Mode',
+      value: false,
+      description: 'Show maintenance banner to all users',
+    },
+  ])
+
+  const handleToggleFlag = useCallback((key: string, value: boolean) => {
+    setFeatureFlags(prev => prev.map(f => (f.key === key ? { ...f, value } : f)))
+    console.log(`🎚 Flag "${key}" toggled to ${value}`)
+  }, [])
 
   // Fire off some example console logs on mount
   useEffect(() => {
@@ -496,6 +529,8 @@ export default function App() {
           },
         ]}
         onCopyLogs={handleCopyLogs}
+        featureFlags={featureFlags}
+        onToggleFeatureFlag={handleToggleFlag}
         extraTabs={extraTabs}
         maxLogs={500}
         networkFilters={['symbolicate']} // exclude RN internal symbolicate requests
