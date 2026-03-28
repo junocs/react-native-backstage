@@ -2,6 +2,7 @@ import { LogLevel } from './types'
 import type { LogEntry } from './types'
 import { formatLogMessage } from './utils/stringify'
 import { DEFAULT_MAX_LOGS } from './constants'
+import { isInsideNetworkCallback } from './network-interceptor'
 
 // ─── Original Console Methods ────────────────────────────────────────────────
 
@@ -17,6 +18,7 @@ type LogCallback = (entry: LogEntry) => void
 
 let activeCallback: LogCallback | null = null
 let isInstalled = false
+let autoFilterNetwork = false
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -54,14 +56,20 @@ function shouldLog(message: unknown, filters: string[]): boolean {
 
 // ─── Install / Uninstall ─────────────────────────────────────────────────────
 
-export function installInterceptor(callback: LogCallback, filters: string[] = []): void {
+export function installInterceptor(
+  callback: LogCallback,
+  filters: string[] = [],
+  options: { autoFilterNetworkLogs?: boolean } = {},
+): void {
   if (isInstalled) {
     // Just update callback if already installed
     activeCallback = callback
+    autoFilterNetwork = options.autoFilterNetworkLogs ?? true
     return
   }
 
   activeCallback = callback
+  autoFilterNetwork = options.autoFilterNetworkLogs ?? true
   isInstalled = true
 
   const levels: Array<[LogLevel, keyof typeof originalConsole]> = [
@@ -79,6 +87,9 @@ export function installInterceptor(callback: LogCallback, filters: string[] = []
 
       // Check filters
       if (!shouldLog(message, filters)) return
+
+      // Skip logs from inside network callbacks (e.g., Axios interceptors)
+      if (autoFilterNetwork && isInsideNetworkCallback()) return
 
       // Create log entry and notify
       if (activeCallback) {

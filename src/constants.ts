@@ -41,9 +41,12 @@ export const DarkTheme: BackstageTheme = {
   debugDim: 'rgba(167, 139, 250, 0.12)',
 }
 
-// ─── Max Logs ────────────────────────────────────────────────────────────────
-
 export const DEFAULT_MAX_LOGS = 500
+
+// ─── Network Defaults ────────────────────────────────────────────────────────
+
+export const DEFAULT_MAX_NETWORK_ENTRIES = 500
+export const DEFAULT_MAX_NETWORK_BODY_SIZE = 65536 // 64 KB
 
 // ─── Monospace Font ──────────────────────────────────────────────────────────
 
@@ -78,5 +81,11 @@ export const TestIDs = {
     searchInput: 'backstage.logs.search',
     copyButton: 'backstage.logs.copy',
     list: 'backstage.logs.list',
+  },
+  networkTab: {
+    section: 'backstage.network',
+    searchInput: 'backstage.network.search',
+    list: 'backstage.network.list',
+    clearButton: 'backstage.network.clear',
   },
 }

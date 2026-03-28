@@ -7,11 +7,16 @@ import React, {
   useState,
 } from 'react'
 import { StyleSheet, View } from 'react-native'
-import { DEFAULT_MAX_LOGS } from './constants'
+import { DEFAULT_MAX_LOGS, DEFAULT_MAX_NETWORK_ENTRIES } from './constants'
 import { installInterceptor, LogBuffer, uninstallInterceptor } from './log-interceptor'
+import {
+  installNetworkInterceptor,
+  NetworkBuffer,
+  uninstallNetworkInterceptor,
+} from './network-interceptor'
 import { FloatingPill } from './components/FloatingPill'
 import { BackstagePanel } from './components/BackstagePanel'
-import type { BackstageProps, BackstageRef, LogEntry } from './types'
+import type { BackstageProps, BackstageRef, LogEntry, NetworkEntry } from './types'
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
@@ -34,21 +39,29 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
       initialX,
       initialY,
       pillText,
+      enableNetworkInspector = true,
+      maxNetworkEntries = DEFAULT_MAX_NETWORK_ENTRIES,
+      maxNetworkBodySize,
+      networkFilters,
+      autoFilterNetworkLogs = true,
     },
     ref,
   ) => {
     const [panelVisible, setPanelVisible] = useState(false)
     const [hasError, setHasError] = useState(false)
     const [logs, setLogs] = useState<LogEntry[]>([])
+    const [networkEntries, setNetworkEntries] = useState<NetworkEntry[]>([])
 
     const logBuffer = useRef(new LogBuffer(maxLogs))
+    const networkBuffer = useRef(new NetworkBuffer(maxNetworkEntries))
 
     // ── Panel controls ────────────────────────────────────────
 
     const openPanel = useCallback(() => {
       setPanelVisible(true)
-      // Sync logs when opening panel
+      // Sync logs and network entries when opening panel
       setLogs(logBuffer.current.getAll())
+      setNetworkEntries(networkBuffer.current.getAll())
     }, [])
 
     const closePanel = useCallback(() => {
@@ -61,10 +74,21 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
       setHasError(false)
     }, [])
 
-    // ── Refresh logs ──────────────────────────────────────────
+    // ── Refresh logs ──────────────────────────────────────────────────
 
     const refreshLogs = useCallback(() => {
       setLogs(logBuffer.current.getAll())
+    }, [])
+
+    // ── Network controls ──────────────────────────────────────────────
+
+    const refreshNetwork = useCallback(() => {
+      setNetworkEntries(networkBuffer.current.getAll())
+    }, [])
+
+    const clearNetwork = useCallback(() => {
+      networkBuffer.current.clear()
+      setNetworkEntries([])
     }, [])
 
     // ── Install console interceptor ───────────────────────────
@@ -79,12 +103,38 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
         }
       }
 
-      installInterceptor(handleLogEntry, logFilters)
+      installInterceptor(handleLogEntry, logFilters, {
+        autoFilterNetworkLogs: enableNetworkInspector && autoFilterNetworkLogs,
+      })
 
       return () => {
         uninstallInterceptor()
       }
-    }, [logFilters])
+    }, [logFilters, enableNetworkInspector, autoFilterNetworkLogs])
+
+    // ── Install network interceptor ───────────────────────────────
+
+    useEffect(() => {
+      if (!enableNetworkInspector) return
+
+      const handleNetworkEntry = (entry: NetworkEntry) => {
+        networkBuffer.current.upsert(entry)
+
+        // Auto-refresh if panel is open
+        if (panelVisible) {
+          setNetworkEntries(networkBuffer.current.getAll())
+        }
+      }
+
+      installNetworkInterceptor(handleNetworkEntry, {
+        filters: networkFilters,
+        maxBodySize: maxNetworkBodySize,
+      })
+
+      return () => {
+        uninstallNetworkInterceptor()
+      }
+    }, [enableNetworkInspector, networkFilters, maxNetworkBodySize, panelVisible])
 
     // ── Expose ref methods ────────────────────────────────────
 
@@ -122,6 +172,10 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
           logs={logs}
           onRefreshLogs={refreshLogs}
           onCopyLogs={onCopyLogs}
+          networkEntries={networkEntries}
+          onRefreshNetwork={refreshNetwork}
+          onClearNetwork={clearNetwork}
+          onCopyNetwork={onCopyLogs}
           extraTabs={extraTabs}
           styles={propStyles}
         >

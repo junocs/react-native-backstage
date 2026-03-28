@@ -19,6 +19,32 @@ export interface LogEntry {
   timestamp: number
 }
 
+// ─── Network Types ───────────────────────────────────────────────────────────
+
+export enum NetworkState {
+  pending = 'pending',
+  completed = 'completed',
+  error = 'error',
+}
+
+export interface NetworkEntry {
+  id: string
+  method: string
+  url: string
+  startTime: number
+  endTime?: number
+  duration?: number
+  status?: number
+  statusText?: string
+  requestHeaders?: Record<string, string>
+  responseHeaders?: Record<string, string>
+  requestBody?: string
+  responseBody?: string
+  responseSize?: number
+  error?: string
+  state: NetworkState
+}
+
 // ─── App Info ────────────────────────────────────────────────────────────────
 
 export interface AppInfoItem {
@@ -119,6 +145,21 @@ export interface BackstageProps {
 
   /** Text displayed on the floating pill. Defaults to appVersion or "DEV" */
   pillText?: string
+
+  /** Whether to enable network request interception. Default: true */
+  enableNetworkInspector?: boolean
+
+  /** Maximum number of network entries to retain in memory. Default: 500 */
+  maxNetworkEntries?: number
+
+  /** Maximum body size (bytes) to capture per request/response. Default: 65536 (64KB) */
+  maxNetworkBodySize?: number
+
+  /** URL substrings to exclude from network capture */
+  networkFilters?: string[]
+
+  /** Auto-filter console.logs from network callbacks (e.g., Axios interceptors) out of the Logs tab. Default: true */
+  autoFilterNetworkLogs?: boolean
 }
 
 export interface BackstageStyleOverrides {

@@ -12,11 +12,13 @@ import { DarkTheme, MonospaceFont, TestIDs } from '../constants'
 import { TabBar } from './TabBar'
 import { InfoTab } from './InfoTab'
 import { LogsTab } from './LogsTab'
+import { NetworkTab } from './NetworkTab'
 import type {
   AppInfoItem,
   BackstageStyleOverrides,
   BackstageTab,
   LogEntry,
+  NetworkEntry,
   QuickAction,
 } from '../types'
 
@@ -39,6 +41,12 @@ interface BackstagePanelProps {
   onRefreshLogs: () => void
   onCopyLogs?: (logs: string) => void
 
+  // Network tab props
+  networkEntries: NetworkEntry[]
+  onRefreshNetwork: () => void
+  onClearNetwork: () => void
+  onCopyNetwork?: (text: string) => void
+
   // Extensibility
   extraTabs?: BackstageTab[]
 
@@ -51,6 +59,7 @@ interface BackstagePanelProps {
 
 const BUILT_IN_TABS = [
   { key: 'info', title: 'Info', icon: 'ℹ️' },
+  { key: 'network', title: 'Network', icon: '🌐' },
   { key: 'logs', title: 'Logs', icon: '📋' },
 ]
 
@@ -68,6 +77,10 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
   logs,
   onRefreshLogs,
   onCopyLogs,
+  networkEntries,
+  onRefreshNetwork,
+  onClearNetwork,
+  onCopyNetwork,
   extraTabs = [],
   styles: propStyles,
   children,
@@ -97,6 +110,15 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
           >
             {children}
           </InfoTab>
+        )
+      case 'network':
+        return (
+          <NetworkTab
+            entries={networkEntries}
+            onRefresh={onRefreshNetwork}
+            onClear={onClearNetwork}
+            onCopy={onCopyNetwork}
+          />
         )
       case 'logs':
         return (

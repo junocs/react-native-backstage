@@ -9,6 +9,7 @@ export type {
   QuickAction,
   AppInfoItem,
   LogEntry,
+  NetworkEntry,
 } from './types'
 
-export { LogLevel } from './types'
+export { LogLevel, NetworkState } from './types'

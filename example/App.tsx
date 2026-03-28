@@ -206,8 +206,8 @@ export default function App() {
 
   const handleCopyLogs = useCallback((logs: string) => {
     // In a real app: Clipboard.setString(logs)
-    Alert.alert('Logs Copied!', `${logs.split('\n').length} log entries copied to clipboard`)
-    console.log(`📋 Copied ${logs.split('\n').length} logs to clipboard`)
+    Alert.alert('Copied!', `${logs.split('\n').length} entries copied to clipboard`)
+    console.log(`📋 Copied ${logs.split('\n').length} entries to clipboard`)
   }, [])
 
   // Simulate periodic logs
@@ -266,6 +266,53 @@ export default function App() {
             nested: { deep: { value: true } },
           },
         })
+        break
+    }
+  }, [])
+
+  // Network demo functions
+  const triggerNetwork = useCallback((type: string) => {
+    switch (type) {
+      case 'get':
+        fetch('https://jsonplaceholder.typicode.com/posts/1')
+          .then(res => res.json())
+          .then(data => console.log('✅ GET response:', data.title))
+          .catch(err => console.error('GET failed:', err))
+        break
+      case 'post':
+        fetch('https://jsonplaceholder.typicode.com/posts', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer fake-token-12345',
+          },
+          body: JSON.stringify({
+            title: 'New Post from Backstage',
+            body: 'Testing the network inspector!',
+            userId: 1,
+          }),
+        })
+          .then(res => res.json())
+          .then(data => console.log('✅ POST response:', data))
+          .catch(err => console.error('POST failed:', err))
+        break
+      case 'error':
+        fetch('https://jsonplaceholder.typicode.com/posts/99999')
+          .then(res => {
+            if (!res.ok) console.warn(`⚠️ Request returned ${res.status}`)
+            return res.json()
+          })
+          .catch(err => console.error('Request failed:', err))
+        break
+      case 'multi':
+        // Fire multiple concurrent requests
+        Promise.all([
+          fetch('https://jsonplaceholder.typicode.com/users/1'),
+          fetch('https://jsonplaceholder.typicode.com/todos/1'),
+          fetch('https://jsonplaceholder.typicode.com/comments?postId=1'),
+        ])
+          .then(() => console.log('✅ All 3 concurrent requests completed'))
+          .catch(err => console.error('Multi-fetch failed:', err))
         break
     }
   }, [])
@@ -334,6 +381,40 @@ export default function App() {
           </View>
         </View>
 
+        {/* Network Triggers */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>🌐 Trigger Network Requests</Text>
+          <Text style={styles.cardDescription}>
+            Tap buttons to fire real HTTP requests. View them in the Network tab.
+          </Text>
+          <View style={styles.buttonGrid}>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonGet]}
+              onPress={() => triggerNetwork('get')}
+            >
+              <Text style={styles.buttonText}>GET</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonPost]}
+              onPress={() => triggerNetwork('post')}
+            >
+              <Text style={styles.buttonText}>POST</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonError]}
+              onPress={() => triggerNetwork('error')}
+            >
+              <Text style={[styles.buttonText, { color: '#fff' }]}>404 Error</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.button, styles.buttonMulti]}
+              onPress={() => triggerNetwork('multi')}
+            >
+              <Text style={styles.buttonText}>3x Parallel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Features Showcase */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>✨ Features Showcase</Text>
@@ -341,6 +422,7 @@ export default function App() {
             {[
               { icon: '🎯', text: 'Draggable floating pill trigger' },
               { icon: '📱', text: 'Device & build info (Info tab)' },
+              { icon: '🌐', text: 'Network inspector with cURL copy' },
               { icon: '🌳', text: 'State tree inspector (mock Redux store)' },
               { icon: '📋', text: 'Console log viewer with search' },
               { icon: '⚡', text: 'Quick actions (Logout, Clear cache, etc.)' },
@@ -366,7 +448,7 @@ export default function App() {
             <Text style={styles.statLabel}>Dependencies</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>3</Text>
+            <Text style={styles.statNumber}>4</Text>
             <Text style={styles.statLabel}>Tabs</Text>
           </View>
         </View>
@@ -416,6 +498,7 @@ export default function App() {
         onCopyLogs={handleCopyLogs}
         extraTabs={extraTabs}
         maxLogs={500}
+        networkFilters={['symbolicate']} // exclude RN internal symbolicate requests
       />
     </View>
   )
@@ -530,6 +613,18 @@ const styles = StyleSheet.create({
   buttonObject: {
     backgroundColor: '#E8F0FE',
     borderColor: '#90CAF9',
+  },
+  buttonGet: {
+    backgroundColor: '#E8F5E9',
+    borderColor: '#66BB6A',
+  },
+  buttonPost: {
+    backgroundColor: '#E3F2FD',
+    borderColor: '#42A5F5',
+  },
+  buttonMulti: {
+    backgroundColor: '#F3E5F5',
+    borderColor: '#AB47BC',
   },
   buttonText: {
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
