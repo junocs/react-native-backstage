@@ -69,7 +69,7 @@ export const LogsTab: React.FC<LogsTabProps> = ({
   const keyExtractor = useCallback((item: LogEntry) => item.id, [])
 
   return (
-    <View style={s.container}>
+    <View testID={TestIDs.logsTab.container} style={s.container}>
       <View style={s.searchContainer}>
         <View style={s.searchInputWrapper}>
           <Text style={s.searchIcon}>⌕</Text>
@@ -98,7 +98,7 @@ export const LogsTab: React.FC<LogsTabProps> = ({
         )}
       </View>
 
-      <View style={s.countBar}>
+      <View testID={TestIDs.logsTab.statsBar} style={s.countBar}>
         <Text style={s.countText}>
           {filteredLogs.length === logs.length
             ? `${logs.length} log${logs.length !== 1 ? 's' : ''}`

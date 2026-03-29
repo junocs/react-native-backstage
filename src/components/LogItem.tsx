@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { MonospaceFont } from '../constants'
+import { MonospaceFont, TestIDs } from '../constants'
 import { useBackstageTheme } from '../ThemeContext'
 import { LogLevel } from '../types'
 import type { LogEntry, BackstageStyleOverrides, BackstageTheme } from '../types'
@@ -74,20 +74,22 @@ export const LogItem: React.FC<LogItemProps> = React.memo(
 
     return (
       <TouchableOpacity
+        testID={TestIDs.logItem.container(item.id)}
         style={[s.container, { backgroundColor: badge.rowBg }]}
         onPress={hasData ? toggleExpand : undefined}
         onLongPress={handleCopy}
         activeOpacity={hasData ? 0.7 : 1}
       >
         <View style={s.headerRow}>
-          <View style={[s.badge, { backgroundColor: badge.bgColor }]}>
+          <View testID={TestIDs.logItem.badge(item.id)} style={[s.badge, { backgroundColor: badge.bgColor }]}>
             <Text style={[s.badgeText, { color: badge.color }]}>{badge.label}</Text>
           </View>
-          <Text style={[s.timestamp, propStyles?.logTimestampStyle]}>
+          <Text testID={TestIDs.logItem.timestamp(item.id)} style={[s.timestamp, propStyles?.logTimestampStyle]}>
             {formatTimestamp(item.timestamp)}
           </Text>
           {onCopy && (
             <TouchableOpacity
+              testID={TestIDs.logItem.copyButton(item.id)}
               style={s.copyButton}
               onPress={handleCopy}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -98,6 +100,7 @@ export const LogItem: React.FC<LogItemProps> = React.memo(
         </View>
 
         <Text
+          testID={TestIDs.logItem.message(item.id)}
           style={[s.message, propStyles?.logMessageStyle]}
           numberOfLines={expanded ? undefined : 3}
         >
@@ -105,7 +108,7 @@ export const LogItem: React.FC<LogItemProps> = React.memo(
         </Text>
 
         {expanded && hasData && (
-          <View style={s.dataContainer}>
+          <View testID={TestIDs.logItem.dataContainer(item.id)} style={s.dataContainer}>
             <JsonTreeView data={item.data} hideRoot maxDepth={jsonMaxDepth} />
           </View>
         )}

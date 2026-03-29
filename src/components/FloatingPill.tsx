@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { Animated, Dimensions, PanResponder, StyleSheet, Text } from 'react-native'
-import { Metrics, MonospaceFont } from '../constants'
+import { Metrics, MonospaceFont, TestIDs } from '../constants'
 import { useBackstageTheme } from '../ThemeContext'
 import type { BackstageStyleOverrides } from '../types'
 
@@ -108,6 +108,7 @@ export const FloatingPill: React.FC<FloatingPillProps> = ({
 
   return (
     <Animated.View
+      testID={TestIDs.floatingPill}
       {...panResponder.panHandlers}
       style={[
         styles.pill,
@@ -119,7 +120,7 @@ export const FloatingPill: React.FC<FloatingPillProps> = ({
         propStyles?.pillStyle,
       ]}
     >
-      <Text style={[styles.pillText, propStyles?.pillTextStyle]} numberOfLines={1}>
+      <Text testID={TestIDs.floatingPillText} style={[styles.pillText, propStyles?.pillTextStyle]} numberOfLines={1}>
         {text}
       </Text>
     </Animated.View>

@@ -81,34 +81,111 @@ export const MonospaceFont = Platform.select({
 // ─── Test IDs ────────────────────────────────────────────────────────────────
 
 export const TestIDs = {
+  // ── Floating Pill ──────────────────────────────
   floatingPill: 'backstage.floating-pill',
+  floatingPillText: 'backstage.floating-pill.text',
+
+  // ── Panel ──────────────────────────────────────
   panel: 'backstage.panel',
+  panelModal: 'backstage.panel.modal',
+
+  // ── Header ─────────────────────────────────────
   header: {
     container: 'backstage.header',
     title: 'backstage.header.title',
     closeButton: 'backstage.header.close',
   },
+
+  // ── Tab Bar ────────────────────────────────────
   tabBar: 'backstage.tab-bar',
   tabs: {
     info: 'backstage.tab.info',
+    network: 'backstage.tab.network',
+    flags: 'backstage.tab.flags',
+    storage: 'backstage.tab.storage',
     logs: 'backstage.tab.logs',
   },
+
+  // ── Info Tab ───────────────────────────────────
   infoTab: {
-    section: 'backstage.info',
+    container: 'backstage.info',
     deviceInfo: 'backstage.info.device',
     stateTree: 'backstage.info.state-tree',
     quickActions: 'backstage.info.quick-actions',
+    /** Dynamic: backstage.info.action.{index} */
+    actionButton: (index: number) => `backstage.info.action.${index}`,
   },
+
+  // ── Logs Tab ───────────────────────────────────
   logsTab: {
-    section: 'backstage.logs',
+    container: 'backstage.logs',
     searchInput: 'backstage.logs.search',
     copyButton: 'backstage.logs.copy',
     list: 'backstage.logs.list',
+    statsBar: 'backstage.logs.stats',
   },
+
+  // ── Log Item ───────────────────────────────────
+  logItem: {
+    /** Dynamic: backstage.log-item.{id} */
+    container: (id: string) => `backstage.log-item.${id}`,
+    badge: (id: string) => `backstage.log-item.${id}.badge`,
+    message: (id: string) => `backstage.log-item.${id}.message`,
+    timestamp: (id: string) => `backstage.log-item.${id}.timestamp`,
+    dataContainer: (id: string) => `backstage.log-item.${id}.data`,
+    copyButton: (id: string) => `backstage.log-item.${id}.copy`,
+  },
+
+  // ── Network Tab ────────────────────────────────
   networkTab: {
-    section: 'backstage.network',
+    container: 'backstage.network',
     searchInput: 'backstage.network.search',
-    list: 'backstage.network.list',
     clearButton: 'backstage.network.clear',
+    list: 'backstage.network.list',
+    statsBar: 'backstage.network.stats',
+  },
+
+  // ── Network Item ───────────────────────────────
+  networkItem: {
+    /** Dynamic: backstage.network-item.{id} */
+    container: (id: string) => `backstage.network-item.${id}`,
+    methodBadge: (id: string) => `backstage.network-item.${id}.method`,
+    statusBadge: (id: string) => `backstage.network-item.${id}.status`,
+    url: (id: string) => `backstage.network-item.${id}.url`,
+    sectionTab: (id: string, section: string) =>
+      `backstage.network-item.${id}.section.${section}`,
+    curlButton: (id: string) => `backstage.network-item.${id}.curl`,
+  },
+
+  // ── Flags Tab ──────────────────────────────────
+  flagsTab: {
+    container: 'backstage.flags',
+    searchInput: 'backstage.flags.search',
+    statsBar: 'backstage.flags.stats',
+    list: 'backstage.flags.list',
+    /** Dynamic: backstage.flag.{key} — applied to the Switch */
+    flagSwitch: (key: string) => `backstage.flag.${key}`,
+    flagLabel: (key: string) => `backstage.flag.${key}.label`,
+    flagRow: (key: string) => `backstage.flag.${key}.row`,
+  },
+
+  // ── Storage Tab ────────────────────────────────
+  storageTab: {
+    container: 'backstage.storage',
+    searchInput: 'backstage.storage.search',
+    addButton: 'backstage.storage.add-button',
+    addForm: 'backstage.storage.add-form',
+    addKeyInput: 'backstage.storage.add-form.key',
+    addValueInput: 'backstage.storage.add-form.value',
+    addSubmitButton: 'backstage.storage.add-form.submit',
+    statsBar: 'backstage.storage.stats',
+    list: 'backstage.storage.list',
+    /** Dynamic: backstage.storage.entry.{key} */
+    entryRow: (key: string) => `backstage.storage.entry.${key}`,
+    entryEditButton: (key: string) => `backstage.storage.entry.${key}.edit`,
+    entryDeleteButton: (key: string) => `backstage.storage.entry.${key}.delete`,
+    entryEditInput: (key: string) => `backstage.storage.entry.${key}.edit-input`,
+    entrySaveButton: (key: string) => `backstage.storage.entry.${key}.save`,
+    entryCancelButton: (key: string) => `backstage.storage.entry.${key}.cancel`,
   },
 }

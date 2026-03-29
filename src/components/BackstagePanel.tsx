@@ -180,7 +180,7 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
 
   return (
     <Modal
-      testID={TestIDs.panel}
+      testID={TestIDs.panelModal}
       animationType="slide"
       transparent={false}
       visible={visible}
@@ -191,12 +191,12 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
         barStyle={theme.background < '#888' ? 'light-content' : 'dark-content'}
         backgroundColor={theme.background}
       />
-      <SafeAreaView style={[styles.safeArea, propStyles?.panelStyle]}>
+      <SafeAreaView testID={TestIDs.panel} style={[styles.safeArea, propStyles?.panelStyle]}>
         {/* ── Header ──────────────────────────────────────────── */}
-        <View style={styles.header}>
+        <View testID={TestIDs.header.container} style={styles.header}>
           <View style={styles.headerLeft}>
             <Text style={styles.headerBrand}>⚙</Text>
-            <Text style={[styles.headerTitle, propStyles?.headerTitleStyle]}>Backstage</Text>
+            <Text testID={TestIDs.header.title} style={[styles.headerTitle, propStyles?.headerTitleStyle]}>Backstage</Text>
           </View>
           <TouchableOpacity
             testID={TestIDs.header.closeButton}

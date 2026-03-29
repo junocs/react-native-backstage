@@ -68,7 +68,7 @@ export const NetworkTab: React.FC<NetworkTabProps> = ({
   const keyExtractor = useCallback((item: NetworkEntry) => item.id, [])
 
   return (
-    <View style={s.container}>
+    <View testID={TestIDs.networkTab.container} style={s.container}>
       <View style={s.searchContainer}>
         <View style={s.searchInputWrapper}>
           <Text style={s.searchIcon}>⌕</Text>
@@ -95,7 +95,7 @@ export const NetworkTab: React.FC<NetworkTabProps> = ({
         </TouchableOpacity>
       </View>
 
-      <View style={s.statsBar}>
+      <View testID={TestIDs.networkTab.statsBar} style={s.statsBar}>
         <View style={s.statsRow}>
           <Text style={s.statText}>
             {filteredEntries.length === entries.length

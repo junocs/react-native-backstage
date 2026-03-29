@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { MonospaceFont } from '../constants'
+import { MonospaceFont, TestIDs } from '../constants'
 import { useBackstageTheme } from '../ThemeContext'
 import { JsonTreeView } from './JsonTreeView'
 import type { AppInfoItem, BackstageStyleOverrides, BackstageTheme, QuickAction } from '../types'
@@ -57,12 +57,13 @@ export const InfoTab: React.FC<InfoTabProps> = ({
 
   return (
     <ScrollView
+      testID={TestIDs.infoTab.container}
       style={s.container}
       contentContainerStyle={s.scrollContent}
       showsVerticalScrollIndicator={false}
     >
       {/* ── Device Info Section ─────────────────────────────────── */}
-      <View style={s.section}>
+      <View testID={TestIDs.infoTab.deviceInfo} style={s.section}>
         <Text style={[s.sectionTitle, propStyles?.sectionTitleStyle]}>DEVICE INFO</Text>
         <View style={s.card}>
           {allInfo.map((item, index) => (
@@ -83,7 +84,7 @@ export const InfoTab: React.FC<InfoTabProps> = ({
 
       {/* ── State Tree Section ──────────────────────────────────── */}
       {state && Object.keys(state).length > 0 && (
-        <View style={s.section}>
+        <View testID={TestIDs.infoTab.stateTree} style={s.section}>
           <Text style={[s.sectionTitle, propStyles?.sectionTitleStyle]}>STATE TREE</Text>
           <View style={s.card}>
             <JsonTreeView data={state} hideRoot maxDepth={jsonMaxDepth} />
@@ -93,7 +94,7 @@ export const InfoTab: React.FC<InfoTabProps> = ({
 
       {/* ── Quick Actions Section ─────────────────────────────────── */}
       {quickActions.length > 0 && (
-        <View style={s.section}>
+        <View testID={TestIDs.infoTab.quickActions} style={s.section}>
           <Text style={[s.sectionTitle, propStyles?.sectionTitleStyle]}>QUICK ACTIONS</Text>
           <View style={s.actionsGrid}>
             {quickActions.map((action, index) => {
@@ -106,7 +107,7 @@ export const InfoTab: React.FC<InfoTabProps> = ({
               return (
                 <TouchableOpacity
                   key={`action_${index}`}
-                  testID={action.testID}
+                  testID={action.testID || TestIDs.infoTab.actionButton(index)}
                   style={[
                     s.actionButton,
                     action.destructive && s.actionButtonDestructive,
