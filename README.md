@@ -10,6 +10,7 @@ A zero-dependency developer/QA debug panel for React Native apps. Inspect device
 - 📋 **Console log viewer** — intercepts all console methods with search & filtering
 - 🌐 **Network inspector** — intercepts fetch & XMLHttpRequest with request/response details, headers, body, timing, and copy-as-cURL
 - 🎚 **Feature flag toggle** — render switches to toggle flags in real-time without restarting
+- 🗄 **Storage viewer** — inspect, edit, and delete AsyncStorage/MMKV entries via a pluggable adapter
 - ⚡ **Quick actions** — add custom buttons (logout, clear cache, etc.)
 - 🔌 **Extensible tabs** — add custom tabs for app-specific debugging tools
 - 🎨 **Dark glassmorphism UI** — beautiful, professional developer tool aesthetic
@@ -106,6 +107,7 @@ const [flags, setFlags] = useState([
 | `quickActions`           | `QuickAction[]`               | `[]`        | Custom action buttons                           |
 | `featureFlags`           | `FeatureFlag[]`               | `[]`        | Feature flags with toggle switches              |
 | `onToggleFeatureFlag`    | `(key, val: boolean) => void` | `undefined` | Callback when a flag is toggled                 |
+| `storageAdapter`         | `StorageAdapter`              | `undefined` | Storage adapter for the Storage Viewer tab      |
 | `maxLogs`                | `number`                      | `500`       | Maximum logs to retain                          |
 | `logFilters`             | `string[]`                    | `[]`        | Messages to exclude from logs                   |
 | `onCopyLogs`             | `(logs: string) => void`      | `undefined` | Callback when copying logs                      |

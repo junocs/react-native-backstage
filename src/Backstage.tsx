@@ -34,6 +34,7 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
       quickActions,
       featureFlags,
       onToggleFeatureFlag,
+      storageAdapter,
       maxLogs = DEFAULT_MAX_LOGS,
       logFilters,
       onCopyLogs,
@@ -186,6 +187,7 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
             onCopyNetwork={onCopyLogs}
             extraTabs={extraTabs}
             jsonMaxDepth={jsonMaxDepth}
+            storageAdapter={storageAdapter}
             styles={propStyles}
           >
             {children}

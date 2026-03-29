@@ -16,6 +16,8 @@
     "!**/.*"
   ],
   "scripts": {
+    "example:ios": "cd example && npx expo run:ios",
+    "example:android": "cd example && npx expo run:android",
     "typecheck": "tsc --noEmit",
     "lint": "prettier --write \"**/*.{js,ts,tsx}\" && eslint \"**/*.{js,ts,tsx}\"",
     "prepack": "bob build",

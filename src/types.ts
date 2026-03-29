@@ -76,6 +76,19 @@ export interface FeatureFlag {
   description?: string
 }
 
+// ─── Storage Adapter ─────────────────────────────────────────────────────────
+
+export interface StorageAdapter {
+  /** Return all stored keys */
+  getAllKeys: () => Promise<string[]>
+  /** Get value for a key. Return null if not found */
+  getItem: (key: string) => Promise<string | null>
+  /** Set a value for a key */
+  setItem: (key: string, value: string) => Promise<void>
+  /** Remove an entry by key */
+  removeItem: (key: string) => Promise<void>
+}
+
 // ─── Extensible Tabs ─────────────────────────────────────────────────────────
 
 export interface BackstageTab {
@@ -140,6 +153,9 @@ export interface BackstageProps {
 
   /** Callback when a feature flag is toggled */
   onToggleFeatureFlag?: (key: string, value: boolean) => void
+
+  /** Storage adapter for the Storage Viewer tab (AsyncStorage, MMKV, etc.) */
+  storageAdapter?: StorageAdapter
 
   /** Maximum number of logs to retain in memory. Default: 500 */
   maxLogs?: number

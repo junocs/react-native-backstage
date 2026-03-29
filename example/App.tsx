@@ -2,7 +2,12 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
 import { Backstage } from 'react-native-backstage'
-import type { BackstageRef, BackstageTab, FeatureFlag } from 'react-native-backstage'
+import type {
+  BackstageRef,
+  BackstageTab,
+  FeatureFlag,
+  StorageAdapter,
+} from 'react-native-backstage'
 import { version } from '../package.json'
 
 // ─── Mock Data: Simulates a real app store ────────────────────────────────────
@@ -41,6 +46,54 @@ const mockStore = {
     biometricLogin: true,
     pushNotifications: false,
     inAppPurchases: true,
+  },
+}
+
+// ─── Mock In-Memory Storage (simulates AsyncStorage / MMKV) ──────────────────
+
+const mockStorageData: Record<string, string> = {
+  '@auth_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c3JfOTg0MiJ9.fake',
+  '@refresh_token': 'rft_abc123def456',
+  '@user_profile': JSON.stringify({
+    id: 'usr_9842',
+    name: 'Jane Developer',
+    email: 'jane@example.com',
+    avatar: 'https://i.pravatar.cc/100',
+    role: 'admin',
+  }),
+  '@app_preferences': JSON.stringify({
+    theme: 'dark',
+    language: 'en-US',
+    notifications: true,
+    hapticFeedback: true,
+    fontSize: 'medium',
+  }),
+  '@onboarding_completed': 'true',
+  '@last_sync': new Date().toISOString(),
+  '@cart_items': JSON.stringify([
+    { id: 'prod_1', name: 'Wireless Headphones', price: 79.99, qty: 1 },
+    { id: 'prod_2', name: 'USB-C Hub', price: 34.99, qty: 2 },
+  ]),
+  '@analytics_session_id': 'sess_' + Math.random().toString(36).substring(2, 10),
+  '@feature_flags_cache': JSON.stringify({
+    dark_mode: true,
+    push_notifications: true,
+    beta_features: false,
+    new_checkout: true,
+  }),
+  '@api_base_url': 'https://api.staging.example.com/v2',
+}
+
+const mockStorageAdapter: StorageAdapter = {
+  getAllKeys: () => Promise.resolve(Object.keys(mockStorageData)),
+  getItem: (key: string) => Promise.resolve(mockStorageData[key] ?? null),
+  setItem: (key: string, value: string) => {
+    mockStorageData[key] = value
+    return Promise.resolve()
+  },
+  removeItem: (key: string) => {
+    delete mockStorageData[key]
+    return Promise.resolve()
   },
 }
 
@@ -536,6 +589,7 @@ export default function App() {
         extraTabs={extraTabs}
         maxLogs={500}
         networkFilters={['symbolicate']} // exclude RN internal symbolicate requests
+        storageAdapter={mockStorageAdapter}
       />
     </View>
   )

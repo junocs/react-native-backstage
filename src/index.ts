@@ -8,6 +8,7 @@ export type {
   BackstageTheme,
   QuickAction,
   FeatureFlag,
+  StorageAdapter,
   AppInfoItem,
   LogEntry,
   NetworkEntry,
@@ -16,3 +17,17 @@ export type {
 export { LogLevel, NetworkState } from './types'
 export { TestIDs, DarkTheme, LightTheme } from './constants'
 export type { ThemePreference } from './ThemeContext'
+
+// ─── Individual Components ───────────────────────────────────────────────────
+
+export { BackstagePanel } from './components/BackstagePanel'
+export { FloatingPill } from './components/FloatingPill'
+export { TabBar } from './components/TabBar'
+export { InfoTab } from './components/InfoTab'
+export { LogsTab } from './components/LogsTab'
+export { LogItem } from './components/LogItem'
+export { NetworkTab } from './components/NetworkTab'
+export { NetworkItem } from './components/NetworkItem'
+export { FlagsTab } from './components/FlagsTab'
+export { StorageTab } from './components/StorageTab'
+export { JsonTreeView } from './components/JsonTreeView'

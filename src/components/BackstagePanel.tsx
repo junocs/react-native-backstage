@@ -15,6 +15,7 @@ import { InfoTab } from './InfoTab'
 import { LogsTab } from './LogsTab'
 import { NetworkTab } from './NetworkTab'
 import { FlagsTab } from './FlagsTab'
+import { StorageTab } from './StorageTab'
 import type {
   AppInfoItem,
   BackstageStyleOverrides,
@@ -23,6 +24,7 @@ import type {
   LogEntry,
   NetworkEntry,
   QuickAction,
+  StorageAdapter,
 } from '../types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -58,6 +60,9 @@ interface BackstagePanelProps {
   // JSON tree
   jsonMaxDepth?: number
 
+  // Storage
+  storageAdapter?: StorageAdapter
+
   // Styling
   styles?: BackstageStyleOverrides
   children?: React.ReactNode
@@ -71,6 +76,8 @@ const ALWAYS_ON_TABS = [
 ]
 
 const FLAGS_TAB = { key: 'flags', title: 'Flags', icon: '🎚' }
+
+const STORAGE_TAB = { key: 'storage', title: 'Storage', icon: '🗄' }
 
 const LOGS_TAB = { key: 'logs', title: 'Logs', icon: '📋' }
 
@@ -96,6 +103,7 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
   onCopyNetwork,
   extraTabs = [],
   jsonMaxDepth,
+  storageAdapter,
   styles: propStyles,
   children,
 }) => {
@@ -105,9 +113,11 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
 
   // Compose all tabs: built-in (conditionally including Flags) + extra
   const hasFlags = featureFlags && featureFlags.length > 0
+  const hasStorage = !!storageAdapter
   const allTabs = [
     ...ALWAYS_ON_TABS,
     ...(hasFlags ? [FLAGS_TAB] : []),
+    ...(hasStorage ? [STORAGE_TAB] : []),
     LOGS_TAB,
     ...extraTabs.map(t => ({ key: t.key, title: t.title, icon: t.icon })),
   ]
@@ -133,6 +143,10 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
         )
       case 'flags':
         return <FlagsTab flags={featureFlags ?? []} onToggle={onToggleFeatureFlag} />
+      case 'storage':
+        return storageAdapter ? (
+          <StorageTab adapter={storageAdapter} jsonMaxDepth={jsonMaxDepth} />
+        ) : null
       case 'network':
         return (
           <NetworkTab
