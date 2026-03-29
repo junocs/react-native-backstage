@@ -196,7 +196,12 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
         <View testID={TestIDs.header.container} style={styles.header}>
           <View style={styles.headerLeft}>
             <Text style={styles.headerBrand}>⚙</Text>
-            <Text testID={TestIDs.header.title} style={[styles.headerTitle, propStyles?.headerTitleStyle]}>Backstage</Text>
+            <Text
+              testID={TestIDs.header.title}
+              style={[styles.headerTitle, propStyles?.headerTitleStyle]}
+            >
+              Backstage
+            </Text>
           </View>
           <TouchableOpacity
             testID={TestIDs.header.closeButton}

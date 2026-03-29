@@ -120,7 +120,11 @@ export const FloatingPill: React.FC<FloatingPillProps> = ({
         propStyles?.pillStyle,
       ]}
     >
-      <Text testID={TestIDs.floatingPillText} style={[styles.pillText, propStyles?.pillTextStyle]} numberOfLines={1}>
+      <Text
+        testID={TestIDs.floatingPillText}
+        style={[styles.pillText, propStyles?.pillTextStyle]}
+        numberOfLines={1}
+      >
         {text}
       </Text>
     </Animated.View>

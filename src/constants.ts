@@ -152,8 +152,7 @@ export const TestIDs = {
     methodBadge: (id: string) => `backstage.network-item.${id}.method`,
     statusBadge: (id: string) => `backstage.network-item.${id}.status`,
     url: (id: string) => `backstage.network-item.${id}.url`,
-    sectionTab: (id: string, section: string) =>
-      `backstage.network-item.${id}.section.${section}`,
+    sectionTab: (id: string, section: string) => `backstage.network-item.${id}.section.${section}`,
     curlButton: (id: string) => `backstage.network-item.${id}.curl`,
   },
 

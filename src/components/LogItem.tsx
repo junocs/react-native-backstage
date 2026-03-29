@@ -81,10 +81,16 @@ export const LogItem: React.FC<LogItemProps> = React.memo(
         activeOpacity={hasData ? 0.7 : 1}
       >
         <View style={s.headerRow}>
-          <View testID={TestIDs.logItem.badge(item.id)} style={[s.badge, { backgroundColor: badge.bgColor }]}>
+          <View
+            testID={TestIDs.logItem.badge(item.id)}
+            style={[s.badge, { backgroundColor: badge.bgColor }]}
+          >
             <Text style={[s.badgeText, { color: badge.color }]}>{badge.label}</Text>
           </View>
-          <Text testID={TestIDs.logItem.timestamp(item.id)} style={[s.timestamp, propStyles?.logTimestampStyle]}>
+          <Text
+            testID={TestIDs.logItem.timestamp(item.id)}
+            style={[s.timestamp, propStyles?.logTimestampStyle]}
+          >
             {formatTimestamp(item.timestamp)}
           </Text>
           {onCopy && (
