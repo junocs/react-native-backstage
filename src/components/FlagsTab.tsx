@@ -79,10 +79,10 @@ export const FlagsTab: React.FC<FlagsTabProps> = ({ flags, onToggle }) => {
             <View key={flag.key}>
               <View style={s.flagRow}>
                 <View style={s.flagInfo}>
-                  <View style={s.flagHeader}>
-                    <Text style={s.flagLabel}>{flag.label}</Text>
-                    <Text style={[s.flagKey, flag.value && s.flagKeyActive]}>{flag.key}</Text>
+                <View style={s.flagHeader}>
+                    <Text style={s.flagLabel} numberOfLines={2}>{flag.label}</Text>
                   </View>
+                  <Text style={[s.flagKey, flag.value && s.flagKeyActive]}>{flag.key}</Text>
                   {flag.description && <Text style={s.flagDescription}>{flag.description}</Text>}
                 </View>
                 <Switch
@@ -169,7 +169,7 @@ const createStyles = (t: BackstageTheme) =>
       paddingHorizontal: 4,
     },
     flagInfo: { flex: 1, marginRight: 16 },
-    flagHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    flagHeader: { flexDirection: 'row', alignItems: 'center' },
     flagLabel: {
       fontFamily: MonospaceFont,
       fontSize: 14,
@@ -185,6 +185,8 @@ const createStyles = (t: BackstageTheme) =>
       paddingHorizontal: 6,
       paddingVertical: 1,
       overflow: 'hidden',
+      alignSelf: 'flex-start',
+      marginTop: 4,
     },
     flagKeyActive: { color: t.accent, backgroundColor: t.accentDim },
     flagDescription: {
