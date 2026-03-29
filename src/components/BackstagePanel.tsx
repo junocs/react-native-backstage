@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import {
   Modal,
   SafeAreaView,
@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { DarkTheme, MonospaceFont, TestIDs } from '../constants'
+import { MonospaceFont, TestIDs } from '../constants'
+import { useBackstageTheme } from '../ThemeContext'
 import { TabBar } from './TabBar'
 import { InfoTab } from './InfoTab'
 import { LogsTab } from './LogsTab'
@@ -54,6 +55,9 @@ interface BackstagePanelProps {
   // Extensibility
   extraTabs?: BackstageTab[]
 
+  // JSON tree
+  jsonMaxDepth?: number
+
   // Styling
   styles?: BackstageStyleOverrides
   children?: React.ReactNode
@@ -91,10 +95,13 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
   onClearNetwork,
   onCopyNetwork,
   extraTabs = [],
+  jsonMaxDepth,
   styles: propStyles,
   children,
 }) => {
   const [activeTab, setActiveTab] = useState('info')
+  const theme = useBackstageTheme()
+  const styles = useMemo(() => createStyles(theme), [theme])
 
   // Compose all tabs: built-in (conditionally including Flags) + extra
   const hasFlags = featureFlags && featureFlags.length > 0
@@ -117,6 +124,7 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
             deviceInfo={deviceInfo}
             state={state}
             quickActions={quickActions}
+            jsonMaxDepth={jsonMaxDepth}
             onClosePanel={onClose}
             styles={propStyles}
           >
@@ -124,12 +132,7 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
           </InfoTab>
         )
       case 'flags':
-        return (
-          <FlagsTab
-            flags={featureFlags ?? []}
-            onToggle={onToggleFeatureFlag}
-          />
-        )
+        return <FlagsTab flags={featureFlags ?? []} onToggle={onToggleFeatureFlag} />
       case 'network':
         return (
           <NetworkTab
@@ -137,6 +140,7 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
             onRefresh={onRefreshNetwork}
             onClear={onClearNetwork}
             onCopy={onCopyNetwork}
+            jsonMaxDepth={jsonMaxDepth}
           />
         )
       case 'logs':
@@ -145,6 +149,7 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
             logs={logs}
             onRefresh={onRefreshLogs}
             onCopyLogs={onCopyLogs}
+            jsonMaxDepth={jsonMaxDepth}
             styles={propStyles}
           />
         )
@@ -168,7 +173,10 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <StatusBar barStyle="light-content" backgroundColor={DarkTheme.background} />
+      <StatusBar
+        barStyle={theme.background < '#888' ? 'light-content' : 'dark-content'}
+        backgroundColor={theme.background}
+      />
       <SafeAreaView style={[styles.safeArea, propStyles?.panelStyle]}>
         {/* ── Header ──────────────────────────────────────────── */}
         <View style={styles.header}>
@@ -199,51 +207,52 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: DarkTheme.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: DarkTheme.border,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerBrand: {
-    fontSize: 20,
-    marginRight: 8,
-  },
-  headerTitle: {
-    fontFamily: MonospaceFont,
-    fontSize: 18,
-    fontWeight: '800',
-    color: DarkTheme.text,
-    letterSpacing: 1,
-  },
-  closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: DarkTheme.surfaceElevated,
-    borderWidth: 1,
-    borderColor: DarkTheme.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  closeButtonText: {
-    fontSize: 14,
-    color: DarkTheme.textSecondary,
-    fontWeight: '700',
-  },
-  content: {
-    flex: 1,
-  },
-})
+const createStyles = (t: import('../types').BackstageTheme) =>
+  StyleSheet.create({
+    safeArea: {
+      flex: 1,
+      backgroundColor: t.background,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+    },
+    headerLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    headerBrand: {
+      fontSize: 20,
+      marginRight: 8,
+    },
+    headerTitle: {
+      fontFamily: MonospaceFont,
+      fontSize: 18,
+      fontWeight: '800',
+      color: t.text,
+      letterSpacing: 1,
+    },
+    closeButton: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: t.surfaceElevated,
+      borderWidth: 1,
+      borderColor: t.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    closeButtonText: {
+      fontSize: 14,
+      color: t.textSecondary,
+      fontWeight: '700',
+    },
+    content: {
+      flex: 1,
+    },
+  })

@@ -1,6 +1,7 @@
 import React, { useRef } from 'react'
 import { Animated, Dimensions, PanResponder, StyleSheet, Text } from 'react-native'
-import { DarkTheme, Metrics, MonospaceFont } from '../constants'
+import { Metrics, MonospaceFont } from '../constants'
+import { useBackstageTheme } from '../ThemeContext'
 import type { BackstageStyleOverrides } from '../types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -100,8 +101,10 @@ export const FloatingPill: React.FC<FloatingPillProps> = ({
     }),
   ).current
 
-  const backgroundColor = hasError ? DarkTheme.error : DarkTheme.accent
-  const shadowColor = hasError ? DarkTheme.error : DarkTheme.accent
+  const theme = useBackstageTheme()
+
+  const backgroundColor = hasError ? theme.error : theme.accent
+  const shadowColor = hasError ? theme.error : theme.accent
 
   return (
     <Animated.View

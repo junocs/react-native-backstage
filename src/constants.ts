@@ -41,6 +41,29 @@ export const DarkTheme: BackstageTheme = {
   debugDim: 'rgba(167, 139, 250, 0.12)',
 }
 
+// ─── Light Theme ─────────────────────────────────────────────────────────────
+
+export const LightTheme: BackstageTheme = {
+  background: '#F5F5F7',
+  surface: '#FFFFFF',
+  surfaceElevated: '#F0F0F4',
+  border: '#D8D8DC',
+  text: '#1C1C1E',
+  textSecondary: '#636366',
+  textMuted: '#AEAEB2',
+  accent: '#6A3DE8',
+  accentDim: 'rgba(106, 61, 232, 0.10)',
+  error: '#E5325F',
+  errorDim: 'rgba(229, 50, 95, 0.10)',
+  warning: '#E09400',
+  warningDim: 'rgba(224, 148, 0, 0.10)',
+  success: '#28A770',
+  info: '#0E8AD6',
+  infoDim: 'rgba(14, 138, 214, 0.10)',
+  debugColor: '#7C4DFF',
+  debugDim: 'rgba(124, 77, 255, 0.10)',
+}
+
 export const DEFAULT_MAX_LOGS = 500
 
 // ─── Network Defaults ────────────────────────────────────────────────────────

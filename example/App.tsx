@@ -3,6 +3,7 @@ import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View }
 import { StatusBar } from 'expo-status-bar'
 import { Backstage } from 'react-native-backstage'
 import type { BackstageRef, BackstageTab, FeatureFlag } from 'react-native-backstage'
+import { version } from '../package.json'
 
 // ─── Mock Data: Simulates a real app store ────────────────────────────────────
 
@@ -59,8 +60,10 @@ const EnvironmentTab: React.FC = () => (
       ].map(({ key, value }, i, arr) => (
         <View key={key}>
           <View style={envStyles.row}>
-            <Text style={envStyles.key}>{key}</Text>
-            <Text style={envStyles.value} numberOfLines={1} selectable>
+            <Text style={envStyles.key} numberOfLines={1}>
+              {key}
+            </Text>
+            <Text style={envStyles.value} selectable>
               {value}
             </Text>
           </View>
@@ -120,7 +123,6 @@ const envStyles = StyleSheet.create({
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     fontSize: 12,
     color: '#A0A0B0',
-    flex: 1,
   },
   value: {
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
@@ -487,14 +489,14 @@ export default function App() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>react-native-backstage v1.0.0</Text>
+          <Text style={styles.footerText}>react-native-backstage v{version}</Text>
         </View>
       </ScrollView>
 
       {/* ── Backstage Debug Panel ─────────────────────────────── */}
       <Backstage
         ref={backstageRef}
-        appVersion="1.0.0"
+        appVersion={version}
         buildNumber="42"
         bundleId="com.backstage.example"
         deviceInfo={[

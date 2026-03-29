@@ -14,3 +14,5 @@ export type {
 } from './types'
 
 export { LogLevel, NetworkState } from './types'
+export { TestIDs, DarkTheme, LightTheme } from './constants'
+export type { ThemePreference } from './ThemeContext'

@@ -1,8 +1,9 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import { DarkTheme, MonospaceFont } from '../constants'
+import { MonospaceFont } from '../constants'
+import { useBackstageTheme } from '../ThemeContext'
 import { JsonTreeView } from './JsonTreeView'
-import type { AppInfoItem, BackstageStyleOverrides, QuickAction } from '../types'
+import type { AppInfoItem, BackstageStyleOverrides, BackstageTheme, QuickAction } from '../types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -13,74 +14,10 @@ interface InfoTabProps {
   deviceInfo?: AppInfoItem[]
   state?: Record<string, unknown>
   quickActions?: QuickAction[]
+  jsonMaxDepth?: number
   onClosePanel?: () => void
   styles?: BackstageStyleOverrides
   children?: React.ReactNode
-}
-
-// ─── Info Row ────────────────────────────────────────────────────────────────
-
-const InfoRow: React.FC<{
-  label: string
-  value: string
-  labelStyle?: BackstageStyleOverrides['infoLabelStyle']
-  valueStyle?: BackstageStyleOverrides['infoValueStyle']
-}> = ({ label, value, labelStyle, valueStyle }) => (
-  <View style={styles.infoRow}>
-    <Text style={[styles.infoLabel, labelStyle]} numberOfLines={1}>
-      {label}
-    </Text>
-    <Text style={[styles.infoValue, valueStyle]} numberOfLines={2} selectable>
-      {value}
-    </Text>
-  </View>
-)
-
-// ─── Section Header ──────────────────────────────────────────────────────────
-
-const SectionHeader: React.FC<{
-  title: string
-  titleStyle?: BackstageStyleOverrides['sectionTitleStyle']
-}> = ({ title, titleStyle }) => <Text style={[styles.sectionTitle, titleStyle]}>{title}</Text>
-
-// ─── Action Button ───────────────────────────────────────────────────────────
-
-const ActionButton: React.FC<{
-  action: QuickAction
-  onClosePanel?: () => void
-  buttonStyle?: BackstageStyleOverrides['actionButtonStyle']
-  buttonTitleStyle?: BackstageStyleOverrides['actionButtonTitleStyle']
-}> = ({ action, onClosePanel, buttonStyle, buttonTitleStyle }) => {
-  const handlePress = () => {
-    action.onPress()
-    if (action.closeOnPress && onClosePanel) {
-      onClosePanel()
-    }
-  }
-
-  return (
-    <TouchableOpacity
-      testID={action.testID}
-      style={[
-        styles.actionButton,
-        action.destructive && styles.actionButtonDestructive,
-        buttonStyle,
-      ]}
-      onPress={handlePress}
-      activeOpacity={0.7}
-    >
-      {action.icon && <Text style={styles.actionIcon}>{action.icon}</Text>}
-      <Text
-        style={[
-          styles.actionButtonTitle,
-          action.destructive && styles.actionButtonTitleDestructive,
-          buttonTitleStyle,
-        ]}
-      >
-        {action.title}
-      </Text>
-    </TouchableOpacity>
-  )
 }
 
 // ─── Main Component ──────────────────────────────────────────────────────────
@@ -92,10 +29,14 @@ export const InfoTab: React.FC<InfoTabProps> = ({
   deviceInfo = [],
   state,
   quickActions = [],
+  jsonMaxDepth,
   onClosePanel,
   styles: propStyles,
   children,
 }) => {
+  const theme = useBackstageTheme()
+  const s = useMemo(() => createStyles(theme), [theme])
+
   // Built-in device info from Platform API
   const builtInInfo: AppInfoItem[] = [
     { label: 'Platform', value: Platform.OS.toUpperCase() },
@@ -116,23 +57,25 @@ export const InfoTab: React.FC<InfoTabProps> = ({
 
   return (
     <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
+      style={s.container}
+      contentContainerStyle={s.scrollContent}
       showsVerticalScrollIndicator={false}
     >
       {/* ── Device Info Section ─────────────────────────────────── */}
-      <View style={styles.section}>
-        <SectionHeader title="DEVICE INFO" titleStyle={propStyles?.sectionTitleStyle} />
-        <View style={styles.card}>
+      <View style={s.section}>
+        <Text style={[s.sectionTitle, propStyles?.sectionTitleStyle]}>DEVICE INFO</Text>
+        <View style={s.card}>
           {allInfo.map((item, index) => (
             <React.Fragment key={`info_${index}`}>
-              <InfoRow
-                label={item.label}
-                value={item.value}
-                labelStyle={propStyles?.infoLabelStyle}
-                valueStyle={propStyles?.infoValueStyle}
-              />
-              {index < allInfo.length - 1 && <View style={styles.divider} />}
+              <View style={s.infoRow}>
+                <Text style={[s.infoLabel, propStyles?.infoLabelStyle]} numberOfLines={1}>
+                  {item.label}
+                </Text>
+                <Text style={[s.infoValue, propStyles?.infoValueStyle]} selectable>
+                  {item.value}
+                </Text>
+              </View>
+              {index < allInfo.length - 1 && <View style={s.divider} />}
             </React.Fragment>
           ))}
         </View>
@@ -140,125 +83,148 @@ export const InfoTab: React.FC<InfoTabProps> = ({
 
       {/* ── State Tree Section ──────────────────────────────────── */}
       {state && Object.keys(state).length > 0 && (
-        <View style={styles.section}>
-          <SectionHeader title="STATE TREE" titleStyle={propStyles?.sectionTitleStyle} />
-          <View style={styles.card}>
-            <JsonTreeView data={state} hideRoot />
+        <View style={s.section}>
+          <Text style={[s.sectionTitle, propStyles?.sectionTitleStyle]}>STATE TREE</Text>
+          <View style={s.card}>
+            <JsonTreeView data={state} hideRoot maxDepth={jsonMaxDepth} />
           </View>
         </View>
       )}
 
-      {/* ── Quick Actions Section ─────────────────────────────────────── */}
+      {/* ── Quick Actions Section ─────────────────────────────────── */}
       {quickActions.length > 0 && (
-        <View style={styles.section}>
-          <SectionHeader title="QUICK ACTIONS" titleStyle={propStyles?.sectionTitleStyle} />
-          <View style={styles.actionsGrid}>
-            {quickActions.map((action, index) => (
-              <ActionButton
-                key={`action_${index}`}
-                action={action}
-                onClosePanel={onClosePanel}
-                buttonStyle={propStyles?.actionButtonStyle}
-                buttonTitleStyle={propStyles?.actionButtonTitleStyle}
-              />
-            ))}
+        <View style={s.section}>
+          <Text style={[s.sectionTitle, propStyles?.sectionTitleStyle]}>QUICK ACTIONS</Text>
+          <View style={s.actionsGrid}>
+            {quickActions.map((action, index) => {
+              const handlePress = () => {
+                action.onPress()
+                if (action.closeOnPress && onClosePanel) {
+                  onClosePanel()
+                }
+              }
+              return (
+                <TouchableOpacity
+                  key={`action_${index}`}
+                  testID={action.testID}
+                  style={[
+                    s.actionButton,
+                    action.destructive && s.actionButtonDestructive,
+                    propStyles?.actionButtonStyle,
+                  ]}
+                  onPress={handlePress}
+                  activeOpacity={0.7}
+                >
+                  {action.icon && <Text style={s.actionIcon}>{action.icon}</Text>}
+                  <Text
+                    style={[
+                      s.actionButtonTitle,
+                      action.destructive && s.actionButtonTitleDestructive,
+                      propStyles?.actionButtonTitleStyle,
+                    ]}
+                  >
+                    {action.title}
+                  </Text>
+                </TouchableOpacity>
+              )
+            })}
           </View>
         </View>
       )}
 
       {/* ── Custom Children ─────────────────────────────────────── */}
-      {children && <View style={styles.section}>{children}</View>}
+      {children && <View style={s.section}>{children}</View>}
     </ScrollView>
   )
 }
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    fontFamily: MonospaceFont,
-    fontSize: 11,
-    fontWeight: '700',
-    color: DarkTheme.textMuted,
-    letterSpacing: 1.5,
-    marginBottom: 8,
-    paddingLeft: 4,
-  },
-  card: {
-    backgroundColor: DarkTheme.surfaceElevated,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: DarkTheme.border,
-    padding: 12,
-    overflow: 'hidden',
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-  },
-  infoLabel: {
-    fontFamily: MonospaceFont,
-    fontSize: 13,
-    color: DarkTheme.textSecondary,
-    flex: 1,
-  },
-  infoValue: {
-    fontFamily: MonospaceFont,
-    fontSize: 13,
-    color: DarkTheme.text,
-    fontWeight: '600',
-    textAlign: 'right',
-    flex: 1,
-    marginLeft: 12,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: DarkTheme.border,
-    marginHorizontal: 4,
-  },
-  actionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  actionButton: {
-    backgroundColor: DarkTheme.accentDim,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: DarkTheme.accent,
-    paddingVertical: 10,
-    paddingHorizontal: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  actionButtonDestructive: {
-    backgroundColor: DarkTheme.errorDim,
-    borderColor: DarkTheme.error,
-  },
-  actionIcon: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  actionButtonTitle: {
-    fontFamily: MonospaceFont,
-    fontSize: 13,
-    fontWeight: '600',
-    color: DarkTheme.accent,
-  },
-  actionButtonTitleDestructive: {
-    color: DarkTheme.error,
-  },
-})
+const createStyles = (t: BackstageTheme) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+    },
+    scrollContent: {
+      padding: 16,
+      paddingBottom: 32,
+    },
+    section: {
+      marginBottom: 20,
+    },
+    sectionTitle: {
+      fontFamily: MonospaceFont,
+      fontSize: 11,
+      fontWeight: '700',
+      color: t.textMuted,
+      letterSpacing: 1.5,
+      marginBottom: 8,
+      paddingLeft: 4,
+    },
+    card: {
+      backgroundColor: t.surfaceElevated,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: t.border,
+      padding: 12,
+      overflow: 'hidden',
+    },
+    infoRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingVertical: 8,
+      paddingHorizontal: 4,
+    },
+    infoLabel: {
+      fontFamily: MonospaceFont,
+      fontSize: 13,
+      color: t.textSecondary,
+    },
+    infoValue: {
+      fontFamily: MonospaceFont,
+      fontSize: 13,
+      color: t.text,
+      fontWeight: '600',
+      textAlign: 'right',
+      flex: 1,
+      marginLeft: 12,
+    },
+    divider: {
+      height: 1,
+      backgroundColor: t.border,
+      marginHorizontal: 4,
+    },
+    actionsGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 10,
+    },
+    actionButton: {
+      backgroundColor: t.accentDim,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: t.accent,
+      paddingVertical: 10,
+      paddingHorizontal: 18,
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    actionButtonDestructive: {
+      backgroundColor: t.errorDim,
+      borderColor: t.error,
+    },
+    actionIcon: {
+      fontSize: 14,
+      marginRight: 6,
+    },
+    actionButtonTitle: {
+      fontFamily: MonospaceFont,
+      fontSize: 13,
+      fontWeight: '600',
+      color: t.accent,
+    },
+    actionButtonTitleDestructive: {
+      color: t.error,
+    },
+  })

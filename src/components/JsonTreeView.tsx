@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import {
   LayoutAnimation,
   Platform,
@@ -8,7 +8,9 @@ import {
   UIManager,
   View,
 } from 'react-native'
-import { DarkTheme, MonospaceFont } from '../constants'
+import { MonospaceFont } from '../constants'
+import { useBackstageTheme } from '../ThemeContext'
+import type { BackstageTheme } from '../types'
 
 // Enable LayoutAnimation on Android
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
@@ -35,12 +37,12 @@ interface JsonNodeProps {
 
 // ─── Color Mapping ───────────────────────────────────────────────────────────
 
-function getValueColor(value: unknown): string {
-  if (value === null || value === undefined) return DarkTheme.textMuted
-  if (typeof value === 'string') return '#98C379' // green
-  if (typeof value === 'number') return '#61AFEF' // cyan
-  if (typeof value === 'boolean') return '#C678DD' // purple
-  return DarkTheme.text
+function getValueColor(value: unknown, t: BackstageTheme): string {
+  if (value === null || value === undefined) return t.textMuted
+  if (typeof value === 'string') return '#98C379'
+  if (typeof value === 'number') return '#61AFEF'
+  if (typeof value === 'boolean') return '#C678DD'
+  return t.text
 }
 
 function getPreview(value: unknown): string {
@@ -79,7 +81,9 @@ const JsonNode: React.FC<JsonNodeProps> = ({
   isLast,
   hideKey = false,
 }) => {
-  const [expanded, setExpanded] = useState(depth < 1)
+  const theme = useBackstageTheme()
+  const s = useMemo(() => createStyles(theme), [theme])
+  const [expanded, setExpanded] = useState(false)
   const expandable = isExpandable(value)
   const reachedMaxDepth = depth >= maxDepth
 
@@ -95,18 +99,18 @@ const JsonNode: React.FC<JsonNodeProps> = ({
     const displayValue = reachedMaxDepth && expandable ? getPreview(value) : formatValue(value)
 
     return (
-      <View style={[styles.row, { paddingLeft: indent }]}>
-        {!hideKey && keyName !== null && <Text style={styles.key}>{`${keyName}: `}</Text>}
+      <View style={[s.row, { paddingLeft: indent }]}>
+        {!hideKey && keyName !== null && <Text style={s.key}>{`${keyName}: `}</Text>}
         <Text
           style={[
-            styles.value,
-            { color: reachedMaxDepth ? DarkTheme.textMuted : getValueColor(value) },
+            s.value,
+            { color: reachedMaxDepth ? theme.textMuted : getValueColor(value, theme) },
           ]}
           numberOfLines={3}
         >
           {displayValue}
         </Text>
-        {!isLast && <Text style={styles.comma}>,</Text>}
+        {!isLast && <Text style={s.comma}>,</Text>}
       </View>
     )
   }
@@ -124,16 +128,16 @@ const JsonNode: React.FC<JsonNodeProps> = ({
       <TouchableOpacity
         onPress={toggleExpand}
         activeOpacity={0.7}
-        style={[styles.row, { paddingLeft: indent }]}
+        style={[s.row, { paddingLeft: indent }]}
       >
-        <Text style={styles.chevron}>{expanded ? '▼' : '▶'}</Text>
-        {!hideKey && keyName !== null && <Text style={styles.key}>{`${keyName}: `}</Text>}
-        <Text style={styles.bracket}>{bracketOpen}</Text>
+        <Text style={s.chevron}>{expanded ? '▼' : '▶'}</Text>
+        {!hideKey && keyName !== null && <Text style={s.key}>{`${keyName}: `}</Text>}
+        <Text style={s.bracket}>{bracketOpen}</Text>
         {!expanded && (
           <>
-            <Text style={styles.preview}>{` ${getPreview(value)} `}</Text>
-            <Text style={styles.bracket}>{bracketClose}</Text>
-            {!isLast && <Text style={styles.comma}>,</Text>}
+            <Text style={s.preview}>{` ${getPreview(value)} `}</Text>
+            <Text style={s.bracket}>{bracketClose}</Text>
+            {!isLast && <Text style={s.comma}>,</Text>}
           </>
         )}
       </TouchableOpacity>
@@ -150,9 +154,9 @@ const JsonNode: React.FC<JsonNodeProps> = ({
               isLast={i === entries.length - 1}
             />
           ))}
-          <View style={[styles.row, { paddingLeft: indent }]}>
-            <Text style={styles.bracket}>{bracketClose}</Text>
-            {!isLast && <Text style={styles.comma}>,</Text>}
+          <View style={[s.row, { paddingLeft: indent }]}>
+            <Text style={s.bracket}>{bracketClose}</Text>
+            {!isLast && <Text style={s.comma}>,</Text>}
           </View>
         </>
       )}
@@ -167,12 +171,15 @@ export const JsonTreeView: React.FC<JsonTreeViewProps> = ({
   hideRoot = false,
   maxDepth = 10,
 }) => {
+  const theme = useBackstageTheme()
+  const s = useMemo(() => createStyles(theme), [theme])
+
   if (data === null || data === undefined) {
-    return <Text style={[styles.value, { color: DarkTheme.textMuted }]}>{String(data)}</Text>
+    return <Text style={[s.value, { color: theme.textMuted }]}>{String(data)}</Text>
   }
 
   if (!isExpandable(data)) {
-    return <Text style={[styles.value, { color: getValueColor(data) }]}>{formatValue(data)}</Text>
+    return <Text style={[s.value, { color: getValueColor(data, theme) }]}>{formatValue(data)}</Text>
   }
 
   if (hideRoot) {
@@ -181,7 +188,7 @@ export const JsonTreeView: React.FC<JsonTreeViewProps> = ({
       : Object.entries(data as Record<string, unknown>)
 
     return (
-      <View style={styles.container}>
+      <View style={s.container}>
         {entries.map(([k, v], i) => (
           <JsonNode
             key={`${k}_${i}`}
@@ -197,7 +204,7 @@ export const JsonTreeView: React.FC<JsonTreeViewProps> = ({
   }
 
   return (
-    <View style={styles.container}>
+    <View style={s.container}>
       <JsonNode
         keyName={null}
         value={data}
@@ -212,48 +219,21 @@ export const JsonTreeView: React.FC<JsonTreeViewProps> = ({
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 4,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: 2,
-    flexWrap: 'wrap',
-  },
-  chevron: {
-    fontFamily: MonospaceFont,
-    fontSize: 10,
-    color: DarkTheme.textMuted,
-    marginRight: 6,
-    marginTop: 2,
-    width: 12,
-  },
-  key: {
-    fontFamily: MonospaceFont,
-    fontSize: 13,
-    color: '#E06C75', // red-ish for keys
-  },
-  value: {
-    fontFamily: MonospaceFont,
-    fontSize: 13,
-    flexShrink: 1,
-  },
-  bracket: {
-    fontFamily: MonospaceFont,
-    fontSize: 13,
-    color: DarkTheme.textSecondary,
-  },
-  preview: {
-    fontFamily: MonospaceFont,
-    fontSize: 13,
-    color: DarkTheme.textMuted,
-    fontStyle: 'italic',
-  },
-  comma: {
-    fontFamily: MonospaceFont,
-    fontSize: 13,
-    color: DarkTheme.textMuted,
-  },
-})
+const createStyles = (t: BackstageTheme) =>
+  StyleSheet.create({
+    container: { paddingVertical: 4 },
+    row: { flexDirection: 'row', alignItems: 'flex-start', paddingVertical: 2, flexWrap: 'wrap' },
+    chevron: {
+      fontFamily: MonospaceFont,
+      fontSize: 10,
+      color: t.textMuted,
+      marginRight: 6,
+      marginTop: 2,
+      width: 12,
+    },
+    key: { fontFamily: MonospaceFont, fontSize: 13, color: '#E06C75' },
+    value: { fontFamily: MonospaceFont, fontSize: 13, flexShrink: 1 },
+    bracket: { fontFamily: MonospaceFont, fontSize: 13, color: t.textSecondary },
+    preview: { fontFamily: MonospaceFont, fontSize: 13, color: t.textMuted, fontStyle: 'italic' },
+    comma: { fontFamily: MonospaceFont, fontSize: 13, color: t.textMuted },
+  })

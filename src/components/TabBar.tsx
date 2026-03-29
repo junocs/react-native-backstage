@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useEffect } from 'react'
+import React, { useCallback, useMemo, useRef, useEffect } from 'react'
 import {
   Animated,
   LayoutChangeEvent,
@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
-import { DarkTheme, MonospaceFont } from '../constants'
+import { MonospaceFont } from '../constants'
+import { useBackstageTheme } from '../ThemeContext'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -27,6 +28,8 @@ interface TabBarProps {
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export const TabBar: React.FC<TabBarProps> = ({ tabs, activeTab, onTabChange }) => {
+  const theme = useBackstageTheme()
+  const styles = useMemo(() => createStyles(theme), [theme])
   const indicatorAnim = useRef(new Animated.Value(0)).current
   const tabWidths = useRef<Record<string, number>>({})
   const tabOffsets = useRef<Record<string, number>>({})
@@ -103,48 +106,49 @@ export const TabBar: React.FC<TabBarProps> = ({ tabs, activeTab, onTabChange }) 
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
-  container: {
-    borderBottomWidth: 1,
-    borderBottomColor: DarkTheme.border,
-  },
-  scrollContent: {
-    flexDirection: 'row',
-    position: 'relative',
-    paddingBottom: 0,
-  },
-  tab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 14,
-    minWidth: 80,
-  },
-  tabIcon: {
-    fontSize: 14,
-    marginRight: 6,
-    opacity: 0.5,
-  },
-  tabIconActive: {
-    opacity: 1,
-  },
-  tabText: {
-    fontFamily: MonospaceFont,
-    fontSize: 13,
-    fontWeight: '600',
-    color: DarkTheme.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  tabTextActive: {
-    color: DarkTheme.accent,
-  },
-  indicator: {
-    position: 'absolute',
-    bottom: 0,
-    height: 2,
-    backgroundColor: DarkTheme.accent,
-    borderRadius: 1,
-  },
-})
+const createStyles = (t: import('../types').BackstageTheme) =>
+  StyleSheet.create({
+    container: {
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+    },
+    scrollContent: {
+      flexDirection: 'row',
+      position: 'relative',
+      paddingBottom: 0,
+    },
+    tab: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 20,
+      paddingVertical: 14,
+      minWidth: 80,
+    },
+    tabIcon: {
+      fontSize: 14,
+      marginRight: 6,
+      opacity: 0.5,
+    },
+    tabIconActive: {
+      opacity: 1,
+    },
+    tabText: {
+      fontFamily: MonospaceFont,
+      fontSize: 13,
+      fontWeight: '600',
+      color: t.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+    },
+    tabTextActive: {
+      color: t.accent,
+    },
+    indicator: {
+      position: 'absolute',
+      bottom: 0,
+      height: 2,
+      backgroundColor: t.accent,
+      borderRadius: 1,
+    },
+  })

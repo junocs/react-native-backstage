@@ -114,6 +114,9 @@ export interface BackstageProps {
   /** Whether the floating pill trigger is visible. Default: true */
   visible?: boolean
 
+  /** Theme preference: 'light', 'dark', or 'auto' (follows device setting). Default: 'auto' */
+  theme?: 'light' | 'dark' | 'auto'
+
   /** App version string (e.g., "1.2.3") */
   appVersion?: string
 
@@ -179,6 +182,9 @@ export interface BackstageProps {
 
   /** Auto-filter console.logs from network callbacks (e.g., Axios interceptors) out of the Logs tab. Default: true */
   autoFilterNetworkLogs?: boolean
+
+  /** Max nesting depth for JSON tree views (state tree, log data, network bodies). Default: 10 */
+  jsonMaxDepth?: number
 }
 
 export interface BackstageStyleOverrides {

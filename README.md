@@ -97,6 +97,7 @@ const [flags, setFlags] = useState([
 | Prop                     | Type                          | Default     | Description                                     |
 | ------------------------ | ----------------------------- | ----------- | ----------------------------------------------- |
 | `visible`                | `boolean`                     | `true`      | Show/hide the floating pill                     |
+| `theme`                  | `'light' \| 'dark' \| 'auto'` | `'auto'`    | Theme preference; auto follows device setting   |
 | `appVersion`             | `string`                      | `undefined` | App version to display                          |
 | `buildNumber`            | `string`                      | `undefined` | Build number                                    |
 | `bundleId`               | `string`                      | `undefined` | Bundle identifier                               |
@@ -113,6 +114,7 @@ const [flags, setFlags] = useState([
 | `maxNetworkBodySize`     | `number`                      | `65536`     | Max body size (bytes) to capture per request    |
 | `networkFilters`         | `string[]`                    | `[]`        | URL substrings to exclude from capture          |
 | `autoFilterNetworkLogs`  | `boolean`                     | `true`      | Auto-filter network callback logs from Logs tab |
+| `jsonMaxDepth`           | `number`                      | `10`        | Max nesting depth for all JSON tree views       |
 | `extraTabs`              | `BackstageTab[]`              | `[]`        | Additional custom tabs                          |
 | `children`               | `ReactNode`                   | `undefined` | Extra content in InfoTab                        |
 

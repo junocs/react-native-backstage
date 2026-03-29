@@ -16,6 +16,7 @@ import {
 } from './network-interceptor'
 import { FloatingPill } from './components/FloatingPill'
 import { BackstagePanel } from './components/BackstagePanel'
+import { BackstageThemeProvider } from './ThemeContext'
 import type { BackstageProps, BackstageRef, LogEntry, NetworkEntry } from './types'
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -24,6 +25,7 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
   (
     {
       visible = true,
+      theme: themePreference = 'auto',
       appVersion,
       buildNumber,
       bundleId,
@@ -46,6 +48,7 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
       maxNetworkBodySize,
       networkFilters,
       autoFilterNetworkLogs = true,
+      jsonMaxDepth,
     },
     ref,
   ) => {
@@ -153,39 +156,42 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
     const displayText = pillText || (appVersion ? `v${appVersion}` : 'DEV')
 
     return (
-      <View style={styles.container} pointerEvents="box-none">
-        <FloatingPill
-          text={displayText}
-          hasError={hasError}
-          onPress={openPanel}
-          initialX={initialX}
-          initialY={initialY}
-          styles={propStyles}
-        />
-        <BackstagePanel
-          visible={panelVisible}
-          onClose={closePanel}
-          appVersion={appVersion}
-          buildNumber={buildNumber}
-          bundleId={bundleId}
-          deviceInfo={deviceInfo}
-          state={state}
-          quickActions={quickActions}
-          featureFlags={featureFlags}
-          onToggleFeatureFlag={onToggleFeatureFlag}
-          logs={logs}
-          onRefreshLogs={refreshLogs}
-          onCopyLogs={onCopyLogs}
-          networkEntries={networkEntries}
-          onRefreshNetwork={refreshNetwork}
-          onClearNetwork={clearNetwork}
-          onCopyNetwork={onCopyLogs}
-          extraTabs={extraTabs}
-          styles={propStyles}
-        >
-          {children}
-        </BackstagePanel>
-      </View>
+      <BackstageThemeProvider preference={themePreference}>
+        <View style={styles.container} pointerEvents="box-none">
+          <FloatingPill
+            text={displayText}
+            hasError={hasError}
+            onPress={openPanel}
+            initialX={initialX}
+            initialY={initialY}
+            styles={propStyles}
+          />
+          <BackstagePanel
+            visible={panelVisible}
+            onClose={closePanel}
+            appVersion={appVersion}
+            buildNumber={buildNumber}
+            bundleId={bundleId}
+            deviceInfo={deviceInfo}
+            state={state}
+            quickActions={quickActions}
+            featureFlags={featureFlags}
+            onToggleFeatureFlag={onToggleFeatureFlag}
+            logs={logs}
+            onRefreshLogs={refreshLogs}
+            onCopyLogs={onCopyLogs}
+            networkEntries={networkEntries}
+            onRefreshNetwork={refreshNetwork}
+            onClearNetwork={clearNetwork}
+            onCopyNetwork={onCopyLogs}
+            extraTabs={extraTabs}
+            jsonMaxDepth={jsonMaxDepth}
+            styles={propStyles}
+          >
+            {children}
+          </BackstagePanel>
+        </View>
+      </BackstageThemeProvider>
     )
   },
 )
