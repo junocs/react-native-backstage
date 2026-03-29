@@ -184,6 +184,12 @@ export interface BackstageProps {
   /** Text displayed on the floating pill. Defaults to appVersion or "DEV" */
   pillText?: string
 
+  /** Width of the floating pill. Default: 60 */
+  pillWidth?: number
+
+  /** Height of the floating pill. Default: 32 */
+  pillHeight?: number
+
   /** Whether to enable network request interception. Default: true */
   enableNetworkInspector?: boolean
 

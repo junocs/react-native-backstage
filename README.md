@@ -4,7 +4,7 @@ A zero-dependency developer/QA debug panel for React Native apps. Inspect device
 
 ## Features
 
-- 🎯 **Draggable floating pill** — always accessible, repositionable trigger
+- 🎯 **Draggable floating pill** — always accessible, repositionable trigger with safe area bounds
 - 📱 **Device & build info** — OS version, app version, build number, and custom data
 - 🌳 **State tree inspector** — visualize Redux, Zustand, or any store state
 - 📋 **Console log viewer** — intercepts all console methods with search & filtering
@@ -13,7 +13,7 @@ A zero-dependency developer/QA debug panel for React Native apps. Inspect device
 - 🗄 **Storage viewer** — inspect, edit, and delete AsyncStorage/MMKV entries via a pluggable adapter
 - ⚡ **Quick actions** — add custom buttons (logout, clear cache, etc.)
 - 🔌 **Extensible tabs** — add custom tabs for app-specific debugging tools
-- 🎨 **Dark glassmorphism UI** — beautiful, professional developer tool aesthetic
+- 🎨 **Light & dark theme** — auto-follows device setting, or override manually
 - 📦 **Zero dependencies** — only peer deps are `react` and `react-native`
 
 ## Installation
@@ -56,6 +56,7 @@ export default function App() {
 The Network tab automatically intercepts all `fetch()` and `XMLHttpRequest` traffic — including libraries built on top of them like **Axios**, **Apisauce**, **ky**, and **Apollo Client**.
 
 Each request shows:
+
 - Method, URL, status code, and duration
 - Request & response headers
 - Request & response body (auto-parsed JSON with tree view)
@@ -75,6 +76,7 @@ Each request shows:
   autoFilterNetworkLogs={true}
 />
 ```
+
 ## Feature Flag Toggle
 
 Pass feature flags to render a dedicated **Flags** tab with toggle switches. The tab only appears when at least one flag is provided. Toggling calls your callback in real-time — no app restart needed.
@@ -89,6 +91,38 @@ const [flags, setFlags] = useState([
   featureFlags={flags}
   onToggleFeatureFlag={(key, value) => {
     setFlags(prev => prev.map(f => (f.key === key ? { ...f, value } : f)))
+  }}
+/>
+```
+
+## Storage Viewer
+
+Pass a `storageAdapter` to render a **Storage** tab that lets you browse, edit, add, and delete key-value entries. The tab only appears when an adapter is provided. Works with any storage backend — zero dependencies.
+
+```tsx
+import AsyncStorage from '@react-native-async-storage/async-storage'
+
+;<Backstage
+  storageAdapter={{
+    getAllKeys: () => AsyncStorage.getAllKeys(),
+    getItem: key => AsyncStorage.getItem(key),
+    setItem: (key, value) => AsyncStorage.setItem(key, value),
+    removeItem: key => AsyncStorage.removeItem(key),
+  }}
+/>
+```
+
+MMKV example:
+
+```tsx
+import { storage } from './mmkv'
+
+;<Backstage
+  storageAdapter={{
+    getAllKeys: () => Promise.resolve(storage.getAllKeys()),
+    getItem: key => Promise.resolve(storage.getString(key) ?? null),
+    setItem: (key, value) => Promise.resolve(storage.set(key, value)),
+    removeItem: key => Promise.resolve(storage.delete(key)),
   }}
 />
 ```
@@ -117,7 +151,13 @@ const [flags, setFlags] = useState([
 | `networkFilters`         | `string[]`                    | `[]`        | URL substrings to exclude from capture          |
 | `autoFilterNetworkLogs`  | `boolean`                     | `true`      | Auto-filter network callback logs from Logs tab |
 | `jsonMaxDepth`           | `number`                      | `10`        | Max nesting depth for all JSON tree views       |
+| `initialX`               | `number`                      | `undefined` | Initial X position for the floating pill        |
+| `initialY`               | `number`                      | `undefined` | Initial Y position for the floating pill        |
+| `pillText`               | `string`                      | `undefined` | Text on the pill (defaults to version or "DEV") |
+| `pillWidth`              | `number`                      | `60`        | Width of the floating pill                      |
+| `pillHeight`             | `number`                      | `32`        | Height of the floating pill                     |
 | `extraTabs`              | `BackstageTab[]`              | `[]`        | Additional custom tabs                          |
+| `styles`                 | `BackstageStyleOverrides`     | `undefined` | Custom style overrides                          |
 | `children`               | `ReactNode`                   | `undefined` | Extra content in InfoTab                        |
 
 ## Ref Methods
@@ -128,6 +168,44 @@ const ref = useRef<BackstageRef>(null)
 ref.current?.open() // Open the panel
 ref.current?.close() // Close the panel
 ref.current?.clearLogs() // Clear all captured logs
+```
+
+## Individual Components
+
+All internal components are exported for advanced use cases — compose your own custom debug UI:
+
+```tsx
+import {
+  BackstagePanel,
+  FloatingPill,
+  TabBar,
+  InfoTab,
+  LogsTab,
+  LogItem,
+  NetworkTab,
+  NetworkItem,
+  FlagsTab,
+  StorageTab,
+  JsonTreeView, // useful standalone for any JSON data
+} from 'rn-backstage'
+```
+
+## TestIDs
+
+All interactive elements have consistent `testID` attributes for E2E testing. Import the `TestIDs` object to reference them:
+
+```tsx
+import { TestIDs } from 'rn-backstage'
+
+// Static IDs
+TestIDs.floatingPill // 'backstage.floating-pill'
+TestIDs.panel // 'backstage.panel'
+TestIDs.header.closeButton // 'backstage.header.close'
+
+// Dynamic IDs (for items in lists)
+TestIDs.logItem.container(id) // 'backstage.log-item.{id}'
+TestIDs.flagsTab.flagSwitch(key) // 'backstage.flag.{key}'
+TestIDs.storageTab.entryRow(key) // 'backstage.storage.entry.{key}'
 ```
 
 ## License

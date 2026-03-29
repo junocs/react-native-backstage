@@ -44,6 +44,8 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
       initialX,
       initialY,
       pillText,
+      pillWidth,
+      pillHeight,
       enableNetworkInspector = true,
       maxNetworkEntries = DEFAULT_MAX_NETWORK_ENTRIES,
       maxNetworkBodySize,
@@ -165,6 +167,8 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
             onPress={openPanel}
             initialX={initialX}
             initialY={initialY}
+            pillWidth={pillWidth}
+            pillHeight={pillHeight}
             styles={propStyles}
           />
           <BackstagePanel
