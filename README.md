@@ -1,5 +1,8 @@
 # rn-backstage
 
+[![npm version](https://img.shields.io/npm/v/rn-backstage.svg)](https://www.npmjs.com/package/rn-backstage)
+[![npm downloads](https://img.shields.io/npm/dm/rn-backstage.svg)](https://www.npmjs.com/package/rn-backstage)
+
 A zero-dependency developer/QA debug panel for React Native apps. Inspect device info, view state trees, monitor console logs, inspect network requests, and trigger custom actions — all from a sleek in-app panel.
 
 ## Features
