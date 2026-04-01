@@ -9,6 +9,7 @@
   "source": "src/index",
   "files": [
     "lib",
+    "README.md",
     "!**/__tests__",
     "!**/__fixtures__",
     "!**/__mocks__",
