@@ -99,7 +99,7 @@ const mockStorageAdapter: StorageAdapter = {
 
 // ─── Custom Tab Example ──────────────────────────────────────────────────────
 
-const EnvironmentTab: React.FC = () => (
+const BuildInfoTab: React.FC = () => (
   <ScrollView style={envStyles.container} contentContainerStyle={envStyles.content}>
     <Text style={envStyles.sectionTitle}>ENVIRONMENT VARIABLES</Text>
     <View style={envStyles.card}>
@@ -198,6 +198,7 @@ const envStyles = StyleSheet.create({
 export default function App() {
   const backstageRef = useRef<BackstageRef>(null)
   const [logCount, setLogCount] = useState(0)
+  const [activeEnv, setActiveEnv] = useState('dev')
 
   // Feature flags state
   const [featureFlags, setFeatureFlags] = useState<FeatureFlag[]>([
@@ -323,10 +324,10 @@ export default function App() {
   // Custom extra tab
   const extraTabs: BackstageTab[] = [
     {
-      key: 'env',
-      title: 'Env',
+      key: 'build',
+      title: 'Build',
       icon: '🔧',
-      render: () => <EnvironmentTab />,
+      render: () => <BuildInfoTab />,
     },
   ]
 
@@ -599,6 +600,63 @@ export default function App() {
           },
           maxLogsInReport: 50,
           maxNetworkEntriesInReport: 20,
+        }}
+        environmentConfig={{
+          environments: [
+            {
+              key: 'dev',
+              label: 'Development',
+              baseUrl: 'https://api.dev.example.com',
+              color: '#10B981',
+            },
+            {
+              key: 'staging',
+              label: 'Staging',
+              baseUrl: 'https://api.staging.example.com',
+              color: '#F59E0B',
+            },
+            {
+              key: 'prod',
+              label: 'Production',
+              baseUrl: 'https://api.example.com',
+              color: '#EF4444',
+            },
+          ],
+          activeEnvironment: activeEnv,
+          onEnvironmentChange: key => {
+            setActiveEnv(key)
+            Alert.alert('Environment Changed', `Switched to ${key}`)
+          },
+          credentialFields: [
+            {
+              key: 'email',
+              label: 'Email',
+              placeholder: 'user@example.com',
+              keyboardType: 'email-address',
+            },
+            {
+              key: 'password',
+              label: 'Password',
+              placeholder: 'Enter password',
+              secureTextEntry: true,
+            },
+          ],
+          onLogin: (envKey, creds) => {
+            Alert.alert(
+              'Login',
+              `Env: ${envKey}\nEmail: ${creds.email || '(empty)'}\nPassword: ${creds.password ? '••••' : '(empty)'}`,
+            )
+          },
+          initialCredentials: {
+            dev: [
+              { name: 'Dev Admin', values: { email: 'admin@dev.example.com', password: 'dev123' } },
+              { name: 'Dev User', values: { email: 'user@dev.example.com', password: 'user123' } },
+            ],
+            staging: [
+              { name: 'QA Tester', values: { email: 'qa@staging.example.com', password: '' } },
+            ],
+          },
+          storageAdapter: mockStorageAdapter,
         }}
       />
     </View>

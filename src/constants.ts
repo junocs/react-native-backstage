@@ -204,4 +204,26 @@ export const TestIDs = {
     shareButton: 'backstage.bug-report.share',
     cancelButton: 'backstage.bug-report.cancel',
   },
+
+  // ── Environment Tab ────────────────────────────
+  environmentTab: {
+    container: 'backstage.environment',
+    environmentCard: (key: string) => `backstage.environment.card.${key}`,
+    radioButton: (key: string) => `backstage.environment.radio.${key}`,
+    addButton: (envKey: string) => `backstage.environment.${envKey}.add`,
+    credentialRow: (envKey: string, index: number) =>
+      `backstage.environment.${envKey}.credential.${index}`,
+    credentialLogin: (envKey: string, index: number) =>
+      `backstage.environment.${envKey}.credential.${index}.login`,
+    credentialEdit: (envKey: string, index: number) =>
+      `backstage.environment.${envKey}.credential.${index}.edit`,
+    credentialDelete: (envKey: string, index: number) =>
+      `backstage.environment.${envKey}.credential.${index}.delete`,
+    editorModal: 'backstage.environment.editor',
+    editorNameInput: 'backstage.environment.editor.name',
+    editorFieldInput: (fieldKey: string) => `backstage.environment.editor.field.${fieldKey}`,
+    editorSaveButton: 'backstage.environment.editor.save',
+    editorCancelButton: 'backstage.environment.editor.cancel',
+    activeLabel: 'backstage.environment.active-label',
+  },
 }

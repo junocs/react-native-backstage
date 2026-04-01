@@ -326,14 +326,7 @@ export const StorageTab: React.FC<StorageTabProps> = ({ adapter, jsonMaxDepth })
         </View>
       )
     },
-    [
-      expandedKeys,
-      jsonMaxDepth,
-      s,
-      toggleExpand,
-      openEditor,
-      confirmDelete,
-    ],
+    [expandedKeys, jsonMaxDepth, s, toggleExpand, openEditor, confirmDelete],
   )
 
   const keyExtractor = useCallback((item: StorageEntry) => item.key, [])
@@ -356,11 +349,7 @@ export const StorageTab: React.FC<StorageTabProps> = ({ adapter, jsonMaxDepth })
             returnKeyType="search"
           />
         </View>
-        <TouchableOpacity
-          style={s.addButton}
-          onPress={openAddEditor}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity style={s.addButton} onPress={openAddEditor} activeOpacity={0.7}>
           <Text style={s.addButtonText}>＋</Text>
         </TouchableOpacity>
       </View>

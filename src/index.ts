@@ -12,6 +12,10 @@ export type {
   BugReport,
   BugReportConfig,
   BugReportSeverity,
+  CredentialField,
+  Environment,
+  EnvironmentConfig,
+  SavedCredential,
   AppInfoItem,
   LogEntry,
   NetworkEntry,
@@ -34,4 +38,5 @@ export { NetworkItem } from './components/NetworkItem'
 export { FlagsTab } from './components/FlagsTab'
 export { StorageTab } from './components/StorageTab'
 export { BugReportComposer } from './components/BugReportComposer'
+export { EnvironmentTab } from './components/EnvironmentTab'
 export { JsonTreeView } from './components/JsonTreeView'

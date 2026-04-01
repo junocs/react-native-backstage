@@ -149,6 +149,45 @@ Add a `bugReport` config to enable one-tap bug reporting. Tapping the 🐛 butto
 />
 ```
 
+## Environment Switcher
+
+Add an `environmentConfig` prop to enable per-environment credential management and login. Each environment shows a card with radio selection. The active environment expands to show saved credentials — each with **Login**, **Edit**, and **Delete** actions. Add/edit opens a fullscreen modal with `KeyboardAvoidingView`.
+
+```tsx
+const [activeEnv, setActiveEnv] = useState('dev')
+
+<Backstage
+  environmentConfig={{
+    environments: [
+      { key: 'dev', label: 'Development', baseUrl: 'https://api.dev.example.com', color: '#10B981' },
+      { key: 'staging', label: 'Staging', baseUrl: 'https://api.staging.example.com', color: '#F59E0B' },
+      { key: 'prod', label: 'Production', baseUrl: 'https://api.example.com', color: '#EF4444' },
+    ],
+    activeEnvironment: activeEnv,
+    onEnvironmentChange: key => setActiveEnv(key),
+    credentialFields: [
+      { key: 'email', label: 'Email', keyboardType: 'email-address' },
+      { key: 'password', label: 'Password', secureTextEntry: true },
+    ],
+    onLogin: (envKey, credentials) => {
+      // credentials = { email: '...', password: '...' }
+      authService.login(envKey, credentials)
+    },
+    // Pre-fill multiple credentials per environment
+    initialCredentials: {
+      dev: [
+        { name: 'Admin', values: { email: 'admin@dev.example.com', password: 'admin123' } },
+        { name: 'Test User', values: { email: 'user@dev.example.com', password: 'user123' } },
+      ],
+    },
+    // Optional: persist credentials to storage (reuses StorageAdapter)
+    storageAdapter: myStorageAdapter,
+  }}
+/>
+```
+
+When `storageAdapter` is provided, credentials auto-save on change and auto-load on mount. Without it, credentials are in-memory only.
+
 ## Props
 
 | Prop                     | Type                          | Default     | Description                                     |
@@ -180,6 +219,7 @@ Add a `bugReport` config to enable one-tap bug reporting. Tapping the 🐛 butto
 | `pillHeight`             | `number`                      | `32`        | Height of the floating pill                     |
 | `extraTabs`              | `BackstageTab[]`              | `[]`        | Additional custom tabs                          |
 | `bugReport`              | `BugReportConfig`             | `undefined` | Bug report config (shows 🐛 button in header)   |
+| `environmentConfig`      | `EnvironmentConfig`           | `undefined` | Environment switcher config (shows 🔐 Env tab)  |
 | `styles`                 | `BackstageStyleOverrides`     | `undefined` | Custom style overrides                          |
 | `children`               | `ReactNode`                   | `undefined` | Extra content in InfoTab                        |
 
@@ -211,6 +251,7 @@ import {
   FlagsTab,
   StorageTab,
   BugReportComposer,
+  EnvironmentTab,
   JsonTreeView, // useful standalone for any JSON data
 } from 'rn-backstage'
 ```
@@ -231,6 +272,8 @@ TestIDs.header.closeButton // 'backstage.header.close'
 TestIDs.logItem.container(id) // 'backstage.log-item.{id}'
 TestIDs.flagsTab.flagSwitch(key) // 'backstage.flag.{key}'
 TestIDs.storageTab.entryRow(key) // 'backstage.storage.entry.{key}'
+TestIDs.environmentTab.environmentCard(key) // 'backstage.environment.card.{key}'
+TestIDs.environmentTab.loginButton(key) // 'backstage.environment.{key}.login'
 ```
 
 ## License

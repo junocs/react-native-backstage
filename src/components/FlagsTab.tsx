@@ -6,8 +6,7 @@ import type { FeatureFlag, BackstageTheme } from '../types'
 
 // iOS 26+ uses the Liquid Glass design system which conflicts with custom
 // ios_backgroundColor / thumbColor on Switch — let the system style it instead.
-const isLiquidGlass =
-  Platform.OS === 'ios' && parseInt(String(Platform.Version), 10) >= 26
+const isLiquidGlass = Platform.OS === 'ios' && parseInt(String(Platform.Version), 10) >= 26
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -84,8 +83,10 @@ export const FlagsTab: React.FC<FlagsTabProps> = ({ flags, onToggle }) => {
             <View key={flag.key}>
               <View style={s.flagRow}>
                 <View style={s.flagInfo}>
-                <View style={s.flagHeader}>
-                    <Text style={s.flagLabel} numberOfLines={2}>{flag.label}</Text>
+                  <View style={s.flagHeader}>
+                    <Text style={s.flagLabel} numberOfLines={2}>
+                      {flag.label}
+                    </Text>
                   </View>
                   <Text style={[s.flagKey, flag.value && s.flagKeyActive]}>{flag.key}</Text>
                   {flag.description && <Text style={s.flagDescription}>{flag.description}</Text>}
@@ -95,7 +96,7 @@ export const FlagsTab: React.FC<FlagsTabProps> = ({ flags, onToggle }) => {
                   value={flag.value}
                   onValueChange={(newValue: boolean) => onToggle?.(flag.key, newValue)}
                   trackColor={{ false: theme.border, true: theme.accent }}
-                  thumbColor={isLiquidGlass ? undefined : (flag.value ? '#FFFFFF' : theme.textMuted)}
+                  thumbColor={isLiquidGlass ? undefined : flag.value ? '#FFFFFF' : theme.textMuted}
                   ios_backgroundColor={isLiquidGlass ? undefined : theme.border}
                   style={isLiquidGlass && s.switch}
                 />
@@ -203,7 +204,7 @@ const createStyles = (t: BackstageTheme) =>
       lineHeight: 18,
     },
     divider: { height: 1, backgroundColor: t.border, marginHorizontal: 4 },
-    switch: { 
+    switch: {
       alignSelf: 'center',
       width: 64,
     },

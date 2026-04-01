@@ -15,11 +15,7 @@ import {
 } from 'react-native'
 import { MonospaceFont, TestIDs } from '../constants'
 import { useBackstageTheme } from '../ThemeContext'
-import {
-  buildDeviceInfo,
-  composeBugReport,
-  submitToWebhook,
-} from '../bug-report'
+import { buildDeviceInfo, composeBugReport, submitToWebhook } from '../bug-report'
 import type {
   AppInfoItem,
   BackstageTheme,
@@ -229,9 +225,7 @@ export const BugReportComposer: React.FC<BugReportComposerProps> = ({
             {submitting ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (
-              <Text style={s.shareButtonText}>
-                {config.webhookUrl ? 'Submit' : 'Share'}
-              </Text>
+              <Text style={s.shareButtonText}>{config.webhookUrl ? 'Submit' : 'Share'}</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -375,20 +369,10 @@ interface ToggleRowProps {
   theme: BackstageTheme
 }
 
-const ToggleRow: React.FC<ToggleRowProps> = ({
-  testID,
-  label,
-  detail,
-  value,
-  onToggle,
-  theme,
-}) => (
+const ToggleRow: React.FC<ToggleRowProps> = ({ testID, label, detail, value, onToggle, theme }) => (
   <TouchableOpacity
     testID={testID}
-    style={[
-      toggleStyles.row,
-      { borderBottomColor: theme.border },
-    ]}
+    style={[toggleStyles.row, { borderBottomColor: theme.border }]}
     onPress={() => onToggle(!value)}
     activeOpacity={0.7}
   >

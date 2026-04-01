@@ -129,6 +129,58 @@ export interface BugReportConfig {
   includeState?: boolean
 }
 
+// ─── Environment Switcher ───────────────────────────────────────────────────────
+
+export interface CredentialField {
+  /** Unique key for this field (e.g., 'email', 'password') */
+  key: string
+  /** Display label */
+  label: string
+  /** Placeholder text */
+  placeholder?: string
+  /** Mask the input (for passwords) */
+  secureTextEntry?: boolean
+  /** Auto-capitalize behavior */
+  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters'
+  /** Keyboard type */
+  keyboardType?: 'default' | 'email-address' | 'numeric' | 'url'
+}
+
+export interface Environment {
+  /** Unique key (e.g., 'dev', 'staging', 'prod') */
+  key: string
+  /** Display label (e.g., 'Development') */
+  label: string
+  /** Base URL for this environment (displayed on the card) */
+  baseUrl?: string
+  /** Accent color for the environment card */
+  color?: string
+}
+
+export interface SavedCredential {
+  /** Display name for this credential set (e.g., 'QA Account', 'Admin') */
+  name: string
+  /** Credential values keyed by CredentialField.key */
+  values: Record<string, string>
+}
+
+export interface EnvironmentConfig {
+  /** List of available environments */
+  environments: Environment[]
+  /** Key of the currently active environment */
+  activeEnvironment: string
+  /** Callback when user switches environment */
+  onEnvironmentChange: (key: string) => void
+  /** Credential input fields to show for each environment */
+  credentialFields?: CredentialField[]
+  /** Callback when user taps Login on a credential */
+  onLogin?: (environmentKey: string, credentials: Record<string, string>) => void
+  /** Pre-fill credentials per environment. Keys are env keys, values are arrays of saved credentials */
+  initialCredentials?: Record<string, SavedCredential[]>
+  /** When provided, credentials are persisted to storage */
+  storageAdapter?: StorageAdapter
+}
+
 // ─── Extensible Tabs ─────────────────────────────────────────────────────────
 
 export interface BackstageTab {
@@ -250,6 +302,9 @@ export interface BackstageProps {
 
   /** Bug report configuration. When provided, shows a 📸 button in the panel header */
   bugReport?: BugReportConfig
+
+  /** Environment switcher configuration. When provided, shows a 🔐 Env tab */
+  environmentConfig?: EnvironmentConfig
 }
 
 export interface BackstageStyleOverrides {

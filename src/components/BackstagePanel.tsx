@@ -16,12 +16,14 @@ import { LogsTab } from './LogsTab'
 import { NetworkTab } from './NetworkTab'
 import { FlagsTab } from './FlagsTab'
 import { StorageTab } from './StorageTab'
+import { EnvironmentTab } from './EnvironmentTab'
 import { BugReportComposer } from './BugReportComposer'
 import type {
   AppInfoItem,
   BackstageStyleOverrides,
   BackstageTab,
   BugReportConfig,
+  EnvironmentConfig,
   FeatureFlag,
   LogEntry,
   NetworkEntry,
@@ -65,6 +67,9 @@ interface BackstagePanelProps {
   // Storage
   storageAdapter?: StorageAdapter
 
+  // Environment
+  environmentConfig?: EnvironmentConfig
+
   // Bug report
   bugReportConfig?: BugReportConfig
   bugReportOpenerRef?: React.MutableRefObject<(() => void) | null>
@@ -84,6 +89,8 @@ const ALWAYS_ON_TABS = [
 const FLAGS_TAB = { key: 'flags', title: 'Flags', icon: '🎚' }
 
 const STORAGE_TAB = { key: 'storage', title: 'Storage', icon: '🗄' }
+
+const ENVIRONMENT_TAB = { key: 'env', title: 'Env', icon: '🔐' }
 
 const LOGS_TAB = { key: 'logs', title: 'Logs', icon: '📋' }
 
@@ -110,6 +117,7 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
   extraTabs = [],
   jsonMaxDepth,
   storageAdapter,
+  environmentConfig,
   bugReportConfig,
   bugReportOpenerRef,
   styles: propStyles,
@@ -136,12 +144,14 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
     }
   }, [bugReportOpenerRef])
 
-  // Compose all tabs: built-in (conditionally including Flags) + extra
+  // Compose all tabs: built-in (conditionally including Flags, Env, Storage) + extra
   const hasFlags = featureFlags && featureFlags.length > 0
   const hasStorage = !!storageAdapter
+  const hasEnv = !!environmentConfig
   const allTabs = [
     ...ALWAYS_ON_TABS,
     ...(hasFlags ? [FLAGS_TAB] : []),
+    ...(hasEnv ? [ENVIRONMENT_TAB] : []),
     ...(hasStorage ? [STORAGE_TAB] : []),
     LOGS_TAB,
     ...extraTabs.map(t => ({ key: t.key, title: t.title, icon: t.icon })),
@@ -182,6 +192,8 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
             jsonMaxDepth={jsonMaxDepth}
           />
         )
+      case 'env':
+        return environmentConfig ? <EnvironmentTab config={environmentConfig} /> : null
       case 'logs':
         return (
           <LogsTab

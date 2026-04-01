@@ -1,11 +1,5 @@
 import { Platform } from 'react-native'
-import type {
-  AppInfoItem,
-  BugReport,
-  BugReportSeverity,
-  LogEntry,
-  NetworkEntry,
-} from './types'
+import type { AppInfoItem, BugReport, BugReportSeverity, LogEntry, NetworkEntry } from './types'
 import { LogLevel } from './types'
 
 // ─── Report Composition ──────────────────────────────────────────────────────
@@ -172,9 +166,7 @@ export function buildDeviceInfo(
   bundleId?: string,
   extraInfo: AppInfoItem[] = [],
 ): AppInfoItem[] {
-  const info: AppInfoItem[] = [
-    { label: 'Platform', value: `${Platform.OS} ${Platform.Version}` },
-  ]
+  const info: AppInfoItem[] = [{ label: 'Platform', value: `${Platform.OS} ${Platform.Version}` }]
 
   if (appVersion) info.push({ label: 'App Version', value: appVersion })
   if (buildNumber) info.push({ label: 'Build Number', value: buildNumber })

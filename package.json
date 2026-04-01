@@ -1,6 +1,6 @@
 {
   "name": "rn-backstage",
-  "version": "1.4.7",
+  "version": "1.5.0",
   "description": "A zero-dependency developer/QA debug panel for React Native apps",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",

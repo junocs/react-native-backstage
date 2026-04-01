@@ -53,6 +53,7 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
       autoFilterNetworkLogs = true,
       jsonMaxDepth,
       bugReport: bugReportConfig,
+      environmentConfig,
     },
     ref,
   ) => {
@@ -202,6 +203,7 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
             extraTabs={extraTabs}
             jsonMaxDepth={jsonMaxDepth}
             storageAdapter={storageAdapter}
+            environmentConfig={environmentConfig}
             bugReportConfig={bugReportConfig}
             bugReportOpenerRef={openBugReportRef}
             styles={propStyles}

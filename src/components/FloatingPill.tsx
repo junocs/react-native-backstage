@@ -105,7 +105,13 @@ export const FloatingPill: React.FC<FloatingPillProps> = ({
       setInsets(newInsets)
 
       // Re-clamp current position to new safe area
-      const clamped = clampPosition(lastPosition.current.x, lastPosition.current.y, newInsets, pillW, pillH)
+      const clamped = clampPosition(
+        lastPosition.current.x,
+        lastPosition.current.y,
+        newInsets,
+        pillW,
+        pillH,
+      )
       if (clamped.x !== lastPosition.current.x || clamped.y !== lastPosition.current.y) {
         lastPosition.current = clamped
         pan.setValue(clamped)
