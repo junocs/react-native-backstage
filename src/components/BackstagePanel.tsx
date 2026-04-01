@@ -120,6 +120,13 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
   const theme = useBackstageTheme()
   const styles = useMemo(() => createStyles(theme), [theme])
 
+  // Reset to Info tab when panel closes so indicator and content stay in sync
+  useEffect(() => {
+    if (!visible) {
+      setActiveTab('info')
+    }
+  }, [visible])
+
   // Register opener callback for the parent ref
   useEffect(() => {
     if (!bugReportOpenerRef) return
