@@ -1,15 +1,15 @@
 {
   "name": "rn-backstage",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "A zero-dependency developer/QA debug panel for React Native apps",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/index.d.ts",
-  "react-native": "lib/module/index",
+  "react-native": "src/index",
   "source": "src/index",
   "files": [
+    "src",
     "lib",
-    "README.md",
     "!**/__tests__",
     "!**/__fixtures__",
     "!**/__mocks__",
