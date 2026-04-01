@@ -97,7 +97,7 @@ export const FlagsTab: React.FC<FlagsTabProps> = ({ flags, onToggle }) => {
                   trackColor={{ false: theme.border, true: theme.accent }}
                   thumbColor={isLiquidGlass ? undefined : (flag.value ? '#FFFFFF' : theme.textMuted)}
                   ios_backgroundColor={isLiquidGlass ? undefined : theme.border}
-                  style={s.switch}
+                  style={isLiquidGlass && s.switch}
                 />
               </View>
               {index < filteredFlags.length - 1 && <View style={s.divider} />}
@@ -203,5 +203,8 @@ const createStyles = (t: BackstageTheme) =>
       lineHeight: 18,
     },
     divider: { height: 1, backgroundColor: t.border, marginHorizontal: 4 },
-    switch: { flexShrink: 0 },
+    switch: { 
+      alignSelf: 'center',
+      width: 64,
+    },
   })
