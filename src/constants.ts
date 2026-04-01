@@ -187,4 +187,21 @@ export const TestIDs = {
     entrySaveButton: (key: string) => `backstage.storage.entry.${key}.save`,
     entryCancelButton: (key: string) => `backstage.storage.entry.${key}.cancel`,
   },
+
+  // ── Bug Report ─────────────────────────────────
+  bugReport: {
+    triggerButton: 'backstage.bug-report.trigger',
+    modal: 'backstage.bug-report.modal',
+    titleInput: 'backstage.bug-report.title',
+    descriptionInput: 'backstage.bug-report.description',
+    severityPicker: 'backstage.bug-report.severity',
+    severityOption: (severity: string) => `backstage.bug-report.severity.${severity}`,
+    toggleDeviceInfo: 'backstage.bug-report.toggle.device-info',
+    toggleLogs: 'backstage.bug-report.toggle.logs',
+    toggleNetwork: 'backstage.bug-report.toggle.network',
+    toggleState: 'backstage.bug-report.toggle.state',
+    toggleScreenshot: 'backstage.bug-report.toggle.screenshot',
+    shareButton: 'backstage.bug-report.share',
+    cancelButton: 'backstage.bug-report.cancel',
+  },
 }

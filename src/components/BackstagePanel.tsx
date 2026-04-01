@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import {
   Modal,
   SafeAreaView,
@@ -16,10 +16,12 @@ import { LogsTab } from './LogsTab'
 import { NetworkTab } from './NetworkTab'
 import { FlagsTab } from './FlagsTab'
 import { StorageTab } from './StorageTab'
+import { BugReportComposer } from './BugReportComposer'
 import type {
   AppInfoItem,
   BackstageStyleOverrides,
   BackstageTab,
+  BugReportConfig,
   FeatureFlag,
   LogEntry,
   NetworkEntry,
@@ -63,6 +65,10 @@ interface BackstagePanelProps {
   // Storage
   storageAdapter?: StorageAdapter
 
+  // Bug report
+  bugReportConfig?: BugReportConfig
+  bugReportOpenerRef?: React.MutableRefObject<(() => void) | null>
+
   // Styling
   styles?: BackstageStyleOverrides
   children?: React.ReactNode
@@ -104,12 +110,24 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
   extraTabs = [],
   jsonMaxDepth,
   storageAdapter,
+  bugReportConfig,
+  bugReportOpenerRef,
   styles: propStyles,
   children,
 }) => {
   const [activeTab, setActiveTab] = useState('info')
+  const [bugReportVisible, setBugReportVisible] = useState(false)
   const theme = useBackstageTheme()
   const styles = useMemo(() => createStyles(theme), [theme])
+
+  // Register opener callback for the parent ref
+  useEffect(() => {
+    if (!bugReportOpenerRef) return
+    bugReportOpenerRef.current = () => setBugReportVisible(true)
+    return () => {
+      bugReportOpenerRef.current = null
+    }
+  }, [bugReportOpenerRef])
 
   // Compose all tabs: built-in (conditionally including Flags) + extra
   const hasFlags = featureFlags && featureFlags.length > 0
@@ -203,15 +221,28 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
               Backstage
             </Text>
           </View>
-          <TouchableOpacity
-            testID={TestIDs.header.closeButton}
-            style={styles.closeButton}
-            onPress={onClose}
-            activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Text style={styles.closeButtonText}>✕</Text>
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            {bugReportConfig && (
+              <TouchableOpacity
+                testID={TestIDs.bugReport.triggerButton}
+                style={styles.headerButton}
+                onPress={() => setBugReportVisible(true)}
+                activeOpacity={0.7}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <Text style={styles.headerButtonText}>🐛</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              testID={TestIDs.header.closeButton}
+              style={styles.closeButton}
+              onPress={onClose}
+              activeOpacity={0.7}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* ── Tab Bar ─────────────────────────────────────────── */}
@@ -220,6 +251,22 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
         {/* ── Tab Content ─────────────────────────────────────── */}
         <View style={styles.content}>{renderTabContent()}</View>
       </SafeAreaView>
+
+      {/* ── Bug Report Composer ───────────────────────────────── */}
+      {bugReportConfig && (
+        <BugReportComposer
+          visible={bugReportVisible}
+          onClose={() => setBugReportVisible(false)}
+          config={bugReportConfig}
+          logs={logs}
+          networkEntries={networkEntries}
+          state={state}
+          appVersion={appVersion}
+          buildNumber={buildNumber}
+          bundleId={bundleId}
+          deviceInfo={deviceInfo}
+        />
+      )}
     </Modal>
   )
 }
@@ -270,6 +317,24 @@ const createStyles = (t: import('../types').BackstageTheme) =>
       fontSize: 14,
       color: t.textSecondary,
       fontWeight: '700',
+    },
+    headerRight: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    headerButton: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      backgroundColor: t.surfaceElevated,
+      borderWidth: 1,
+      borderColor: t.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    headerButtonText: {
+      fontSize: 16,
     },
     content: {
       flex: 1,

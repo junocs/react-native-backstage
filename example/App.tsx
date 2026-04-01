@@ -590,6 +590,16 @@ export default function App() {
         maxLogs={500}
         networkFilters={['symbolicate']} // exclude RN internal symbolicate requests
         storageAdapter={mockStorageAdapter}
+        bugReport={{
+          onSubmit: report => {
+            Alert.alert(
+              'Bug Report Submitted',
+              `Title: ${report.title}\nSeverity: ${report.severity}\nLogs: ${report.logs.length}\nNetwork: ${report.networkEntries.length}`,
+            )
+          },
+          maxLogsInReport: 50,
+          maxNetworkEntriesInReport: 20,
+        }}
       />
     </View>
   )

@@ -52,6 +52,7 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
       networkFilters,
       autoFilterNetworkLogs = true,
       jsonMaxDepth,
+      bugReport: bugReportConfig,
     },
     ref,
   ) => {
@@ -146,10 +147,19 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
 
     // ── Expose ref methods ────────────────────────────────────
 
+    const openBugReportRef = useRef<(() => void) | null>(null)
+
     useImperativeHandle(ref, () => ({
       open: openPanel,
       close: closePanel,
       clearLogs,
+      submitBugReport: () => {
+        if (bugReportConfig) {
+          openPanel()
+          // Small delay to let panel mount first
+          setTimeout(() => openBugReportRef.current?.(), 100)
+        }
+      },
     }))
 
     // ── Render ────────────────────────────────────────────────
@@ -192,6 +202,8 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
             extraTabs={extraTabs}
             jsonMaxDepth={jsonMaxDepth}
             storageAdapter={storageAdapter}
+            bugReportConfig={bugReportConfig}
+            bugReportOpenerRef={openBugReportRef}
             styles={propStyles}
           >
             {children}

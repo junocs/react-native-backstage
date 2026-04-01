@@ -9,6 +9,9 @@ export type {
   QuickAction,
   FeatureFlag,
   StorageAdapter,
+  BugReport,
+  BugReportConfig,
+  BugReportSeverity,
   AppInfoItem,
   LogEntry,
   NetworkEntry,
@@ -30,4 +33,5 @@ export { NetworkTab } from './components/NetworkTab'
 export { NetworkItem } from './components/NetworkItem'
 export { FlagsTab } from './components/FlagsTab'
 export { StorageTab } from './components/StorageTab'
+export { BugReportComposer } from './components/BugReportComposer'
 export { JsonTreeView } from './components/JsonTreeView'

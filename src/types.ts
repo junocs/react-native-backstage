@@ -89,6 +89,46 @@ export interface StorageAdapter {
   removeItem: (key: string) => Promise<void>
 }
 
+// ─── Bug Report ──────────────────────────────────────────────────────────────
+
+export type BugReportSeverity = 'low' | 'medium' | 'high' | 'critical'
+
+export interface BugReport {
+  /** Report title */
+  title: string
+  /** Detailed description */
+  description: string
+  /** Severity level */
+  severity: BugReportSeverity
+  /** Device & app info snapshot */
+  deviceInfo: AppInfoItem[]
+  /** Console log entries included in the report */
+  logs: LogEntry[]
+  /** Network entries included in the report */
+  networkEntries: NetworkEntry[]
+  /** State tree snapshot (if included) */
+  state?: Record<string, unknown>
+  /** Screenshot URI or base64 (if captured) */
+  screenshotUri?: string
+  /** Timestamp when the report was created */
+  timestamp: number
+}
+
+export interface BugReportConfig {
+  /** Callback when a report is submitted. Receives the full BugReport object */
+  onSubmit?: (report: BugReport) => void
+  /** Webhook URL to POST the report to */
+  webhookUrl?: string
+  /** Optional function to capture a screenshot. Return a file URI or base64 string */
+  captureScreenshot?: () => Promise<string>
+  /** Max number of log entries to include in the report. Default: 50 */
+  maxLogsInReport?: number
+  /** Max number of network entries to include in the report. Default: 20 */
+  maxNetworkEntriesInReport?: number
+  /** Whether to include the state tree in the report. Default: true */
+  includeState?: boolean
+}
+
 // ─── Extensible Tabs ─────────────────────────────────────────────────────────
 
 export interface BackstageTab {
@@ -207,6 +247,9 @@ export interface BackstageProps {
 
   /** Max nesting depth for JSON tree views (state tree, log data, network bodies). Default: 10 */
   jsonMaxDepth?: number
+
+  /** Bug report configuration. When provided, shows a 📸 button in the panel header */
+  bugReport?: BugReportConfig
 }
 
 export interface BackstageStyleOverrides {
@@ -232,4 +275,6 @@ export interface BackstageRef {
   close: () => void
   /** Clear all captured logs */
   clearLogs: () => void
+  /** Open the bug report composer programmatically */
+  submitBugReport: () => void
 }

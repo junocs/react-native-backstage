@@ -130,6 +130,27 @@ import { storage } from './mmkv'
 />
 ```
 
+## Bug Report
+
+Add a `bugReport` config to enable one-tap bug reporting. Tapping the 🐛 button in the panel header opens a composer that auto-attaches device info, logs, network activity, and state. Reports can be shared via the system share sheet or submitted to a webhook.
+
+```tsx
+<Backstage
+  bugReport={{
+    onSubmit: report => {
+      // Full BugReport object with all context
+      console.log(report.title, report.severity, report.logs.length)
+    },
+    // Optional: POST to a webhook
+    webhookUrl: 'https://your-api.com/bugs',
+    // Optional: capture screenshot (requires a library like react-native-view-shot)
+    captureScreenshot: () => viewShotRef.current.capture(),
+    maxLogsInReport: 50,
+    maxNetworkEntriesInReport: 20,
+  }}
+/>
+```
+
 ## Props
 
 | Prop                     | Type                          | Default     | Description                                     |
@@ -160,6 +181,7 @@ import { storage } from './mmkv'
 | `pillWidth`              | `number`                      | `60`        | Width of the floating pill                      |
 | `pillHeight`             | `number`                      | `32`        | Height of the floating pill                     |
 | `extraTabs`              | `BackstageTab[]`              | `[]`        | Additional custom tabs                          |
+| `bugReport`              | `BugReportConfig`             | `undefined` | Bug report config (shows 🐛 button in header)    |
 | `styles`                 | `BackstageStyleOverrides`     | `undefined` | Custom style overrides                          |
 | `children`               | `ReactNode`                   | `undefined` | Extra content in InfoTab                        |
 
@@ -171,6 +193,7 @@ const ref = useRef<BackstageRef>(null)
 ref.current?.open() // Open the panel
 ref.current?.close() // Close the panel
 ref.current?.clearLogs() // Clear all captured logs
+ref.current?.submitBugReport() // Open bug report composer
 ```
 
 ## Individual Components
@@ -189,6 +212,7 @@ import {
   NetworkItem,
   FlagsTab,
   StorageTab,
+  BugReportComposer,
   JsonTreeView, // useful standalone for any JSON data
 } from 'rn-backstage'
 ```
