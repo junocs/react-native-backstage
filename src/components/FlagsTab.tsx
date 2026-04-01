@@ -1,8 +1,13 @@
 import React, { useMemo, useState } from 'react'
-import { ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
+import { Platform, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native'
 import { MonospaceFont } from '../constants'
 import { useBackstageTheme } from '../ThemeContext'
 import type { FeatureFlag, BackstageTheme } from '../types'
+
+// iOS 26+ uses the Liquid Glass design system which conflicts with custom
+// ios_backgroundColor / thumbColor on Switch — let the system style it instead.
+const isLiquidGlass =
+  Platform.OS === 'ios' && parseInt(String(Platform.Version), 10) >= 26
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -90,8 +95,9 @@ export const FlagsTab: React.FC<FlagsTabProps> = ({ flags, onToggle }) => {
                   value={flag.value}
                   onValueChange={(newValue: boolean) => onToggle?.(flag.key, newValue)}
                   trackColor={{ false: theme.border, true: theme.accent }}
-                  thumbColor={flag.value ? '#FFFFFF' : theme.textMuted}
-                  ios_backgroundColor={theme.border}
+                  thumbColor={isLiquidGlass ? undefined : (flag.value ? '#FFFFFF' : theme.textMuted)}
+                  ios_backgroundColor={isLiquidGlass ? undefined : theme.border}
+                  style={s.switch}
                 />
               </View>
               {index < filteredFlags.length - 1 && <View style={s.divider} />}
@@ -197,4 +203,5 @@ const createStyles = (t: BackstageTheme) =>
       lineHeight: 18,
     },
     divider: { height: 1, backgroundColor: t.border, marginHorizontal: 4 },
+    switch: { flexShrink: 0 },
   })

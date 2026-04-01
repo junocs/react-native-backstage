@@ -126,8 +126,6 @@ export const LogsTab: React.FC<LogsTabProps> = ({
         maxToRenderPerBatch={20}
         windowSize={10}
         initialNumToRender={20}
-        removeClippedSubviews={true}
-        getItemLayout={undefined}
       />
     </View>
   )

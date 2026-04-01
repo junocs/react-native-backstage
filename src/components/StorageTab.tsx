@@ -1,5 +1,18 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import {
+  Alert,
+  FlatList,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import { MonospaceFont } from '../constants'
 import { useBackstageTheme } from '../ThemeContext'
 import { JsonTreeView } from './JsonTreeView'
@@ -33,6 +46,88 @@ function truncateValue(value: string, max = 80): string {
   return value.substring(0, max) + '…'
 }
 
+// ─── Editor Modal ────────────────────────────────────────────────────────────
+
+interface EditorModalProps {
+  visible: boolean
+  title: string
+  storageKey: string
+  storageValue: string
+  isNewEntry: boolean
+  onChangeKey: (text: string) => void
+  onChangeValue: (text: string) => void
+  onSave: () => void
+  onCancel: () => void
+  theme: BackstageTheme
+}
+
+const EditorModal: React.FC<EditorModalProps> = ({
+  visible,
+  title,
+  storageKey,
+  storageValue,
+  isNewEntry,
+  onChangeKey,
+  onChangeValue,
+  onSave,
+  onCancel,
+  theme,
+}) => {
+  const s = useMemo(() => createStyles(theme), [theme])
+
+  return (
+    <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onCancel}>
+      <SafeAreaView style={s.modalContainer}>
+        {/* Header */}
+        <View style={s.modalHeader}>
+          <TouchableOpacity onPress={onCancel} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Text style={s.modalCancelText}>Cancel</Text>
+          </TouchableOpacity>
+          <Text style={s.modalTitle}>{title}</Text>
+          <TouchableOpacity onPress={onSave} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Text style={s.modalSaveText}>Save</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Form */}
+        <KeyboardAvoidingView
+          style={s.modalBody}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          <ScrollView
+            contentContainerStyle={s.modalBodyContent}
+            keyboardShouldPersistTaps="handled"
+          >
+            <Text style={s.modalLabel}>Key</Text>
+            <TextInput
+              style={[s.modalInput, !isNewEntry && s.modalInputDisabled]}
+              value={storageKey}
+              onChangeText={onChangeKey}
+              editable={isNewEntry}
+              autoCapitalize="none"
+              autoCorrect={false}
+              placeholderTextColor={theme.textMuted}
+              placeholder="Storage key"
+            />
+
+            <Text style={[s.modalLabel, { marginTop: 16 }]}>Value</Text>
+            <TextInput
+              style={[s.modalInput, s.modalValueInput]}
+              value={storageValue}
+              onChangeText={onChangeValue}
+              multiline
+              autoFocus={!isNewEntry}
+              textAlignVertical="top"
+              placeholderTextColor={theme.textMuted}
+              placeholder="Value"
+            />
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </Modal>
+  )
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export const StorageTab: React.FC<StorageTabProps> = ({ adapter, jsonMaxDepth }) => {
@@ -43,14 +138,11 @@ export const StorageTab: React.FC<StorageTabProps> = ({ adapter, jsonMaxDepth })
   const [loading, setLoading] = useState(true)
   const [searchText, setSearchText] = useState('')
 
-  // Edit state
-  const [editingKey, setEditingKey] = useState<string | null>(null)
-  const [editValue, setEditValue] = useState('')
-
-  // Add new entry state
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [newKey, setNewKey] = useState('')
-  const [newValue, setNewValue] = useState('')
+  // Editor modal state
+  const [editorVisible, setEditorVisible] = useState(false)
+  const [editorIsNew, setEditorIsNew] = useState(false)
+  const [editorKey, setEditorKey] = useState('')
+  const [editorValue, setEditorValue] = useState('')
 
   // Expanded entries (for JSON preview)
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
@@ -100,28 +192,51 @@ export const StorageTab: React.FC<StorageTabProps> = ({ adapter, jsonMaxDepth })
     })
   }, [])
 
-  // ─── Edit ────────────────────────────────────────────────
-  const startEditing = useCallback((entry: StorageEntry) => {
-    setEditingKey(entry.key)
-    setEditValue(entry.value)
+  // ─── Editor ──────────────────────────────────────────────
+  const openEditor = useCallback((entry: StorageEntry) => {
+    setEditorIsNew(false)
+    setEditorKey(entry.key)
+    setEditorValue(entry.value)
+    setEditorVisible(true)
   }, [])
 
-  const cancelEditing = useCallback(() => {
-    setEditingKey(null)
-    setEditValue('')
+  const openAddEditor = useCallback(() => {
+    setEditorIsNew(true)
+    setEditorKey('')
+    setEditorValue('')
+    setEditorVisible(true)
   }, [])
 
-  const saveEdit = useCallback(async () => {
-    if (editingKey === null) return
+  const closeEditor = useCallback(() => {
+    setEditorVisible(false)
+    setEditorKey('')
+    setEditorValue('')
+  }, [])
+
+  const saveEditor = useCallback(async () => {
+    const trimmedKey = editorKey.trim()
+    if (!trimmedKey) {
+      Alert.alert('Error', 'Key cannot be empty')
+      return
+    }
     try {
-      await adapter.setItem(editingKey, editValue)
-      setEntries(prev => prev.map(e => (e.key === editingKey ? { ...e, value: editValue } : e)))
-      setEditingKey(null)
-      setEditValue('')
+      await adapter.setItem(trimmedKey, editorValue)
+      setEntries(prev => {
+        const exists = prev.findIndex(e => e.key === trimmedKey)
+        if (exists >= 0) {
+          const updated = [...prev]
+          updated[exists] = { key: trimmedKey, value: editorValue }
+          return updated
+        }
+        return [...prev, { key: trimmedKey, value: editorValue }].sort((a, b) =>
+          a.key.localeCompare(b.key),
+        )
+      })
+      closeEditor()
     } catch (err) {
       Alert.alert('Error', `Failed to save: ${err}`)
     }
-  }, [adapter, editingKey, editValue])
+  }, [adapter, editorKey, editorValue, closeEditor])
 
   // ─── Delete ──────────────────────────────────────────────
   const confirmDelete = useCallback(
@@ -150,38 +265,9 @@ export const StorageTab: React.FC<StorageTabProps> = ({ adapter, jsonMaxDepth })
     [adapter],
   )
 
-  // ─── Add New Entry ───────────────────────────────────────
-  const handleAddEntry = useCallback(async () => {
-    const trimmedKey = newKey.trim()
-    if (!trimmedKey) {
-      Alert.alert('Error', 'Key cannot be empty')
-      return
-    }
-    try {
-      await adapter.setItem(trimmedKey, newValue)
-      setEntries(prev => {
-        const exists = prev.findIndex(e => e.key === trimmedKey)
-        if (exists >= 0) {
-          const updated = [...prev]
-          updated[exists] = { key: trimmedKey, value: newValue }
-          return updated
-        }
-        return [...prev, { key: trimmedKey, value: newValue }].sort((a, b) =>
-          a.key.localeCompare(b.key),
-        )
-      })
-      setNewKey('')
-      setNewValue('')
-      setShowAddForm(false)
-    } catch (err) {
-      Alert.alert('Error', `Failed to save: ${err}`)
-    }
-  }, [adapter, newKey, newValue])
-
   // ─── Render Entry ────────────────────────────────────────
   const renderItem = useCallback(
     ({ item }: { item: StorageEntry }) => {
-      const isEditing = editingKey === item.key
       const isExpanded = expandedKeys.has(item.key)
       const jsonValue = tryParseJSON(item.value)
       const isJSON = jsonValue !== null
@@ -203,7 +289,7 @@ export const StorageTab: React.FC<StorageTabProps> = ({ adapter, jsonMaxDepth })
             </TouchableOpacity>
             <View style={s.entryActions}>
               <TouchableOpacity
-                onPress={() => startEditing(item)}
+                onPress={() => openEditor(item)}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
                 <Text style={s.actionIcon}>✎</Text>
@@ -218,28 +304,7 @@ export const StorageTab: React.FC<StorageTabProps> = ({ adapter, jsonMaxDepth })
           </View>
 
           {/* Value */}
-          {isEditing ? (
-            <View style={s.editContainer}>
-              <TextInput
-                style={s.editInput}
-                value={editValue}
-                onChangeText={setEditValue}
-                multiline
-                autoFocus
-                textAlignVertical="top"
-                placeholderTextColor={theme.textMuted}
-                placeholder="Value"
-              />
-              <View style={s.editActions}>
-                <TouchableOpacity style={s.cancelButton} onPress={cancelEditing}>
-                  <Text style={s.cancelButtonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={s.saveButton} onPress={saveEdit}>
-                  <Text style={s.saveButtonText}>Save</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ) : isExpanded ? (
+          {isExpanded ? (
             <View style={s.expandedValue}>
               {isJSON ? (
                 <View style={s.jsonContainer}>
@@ -262,16 +327,11 @@ export const StorageTab: React.FC<StorageTabProps> = ({ adapter, jsonMaxDepth })
       )
     },
     [
-      editingKey,
-      editValue,
       expandedKeys,
       jsonMaxDepth,
       s,
-      theme.textMuted,
       toggleExpand,
-      startEditing,
-      cancelEditing,
-      saveEdit,
+      openEditor,
       confirmDelete,
     ],
   )
@@ -298,39 +358,12 @@ export const StorageTab: React.FC<StorageTabProps> = ({ adapter, jsonMaxDepth })
         </View>
         <TouchableOpacity
           style={s.addButton}
-          onPress={() => setShowAddForm(prev => !prev)}
+          onPress={openAddEditor}
           activeOpacity={0.7}
         >
-          <Text style={s.addButtonText}>{showAddForm ? '✕' : '＋'}</Text>
+          <Text style={s.addButtonText}>＋</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Add form */}
-      {showAddForm && (
-        <View style={s.addForm}>
-          <TextInput
-            style={s.addInput}
-            placeholder="Key"
-            placeholderTextColor={theme.textMuted}
-            value={newKey}
-            onChangeText={setNewKey}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          <TextInput
-            style={[s.addInput, s.addValueInput]}
-            placeholder="Value"
-            placeholderTextColor={theme.textMuted}
-            value={newValue}
-            onChangeText={setNewValue}
-            multiline
-            textAlignVertical="top"
-          />
-          <TouchableOpacity style={s.addSubmitButton} onPress={handleAddEntry} activeOpacity={0.7}>
-            <Text style={s.addSubmitText}>Add Entry</Text>
-          </TouchableOpacity>
-        </View>
-      )}
 
       {/* Stats */}
       <View style={s.statsBar}>
@@ -364,6 +397,20 @@ export const StorageTab: React.FC<StorageTabProps> = ({ adapter, jsonMaxDepth })
         windowSize={10}
         initialNumToRender={20}
         removeClippedSubviews={true}
+      />
+
+      {/* Editor Modal */}
+      <EditorModal
+        visible={editorVisible}
+        title={editorIsNew ? 'Add Entry' : `Edit "${editorKey}"`}
+        storageKey={editorKey}
+        storageValue={editorValue}
+        isNewEntry={editorIsNew}
+        onChangeKey={setEditorKey}
+        onChangeValue={setEditorValue}
+        onSave={saveEditor}
+        onCancel={closeEditor}
+        theme={theme}
       />
     </View>
   )
@@ -415,39 +462,6 @@ const createStyles = (t: BackstageTheme) =>
       justifyContent: 'center',
     },
     addButtonText: { fontSize: 18, color: t.accent, fontWeight: '700' },
-
-    // ── Add Form ───────────────────
-    addForm: {
-      padding: 14,
-      borderBottomWidth: 1,
-      borderBottomColor: t.border,
-      backgroundColor: t.surface,
-      gap: 8,
-    },
-    addInput: {
-      fontFamily: MonospaceFont,
-      fontSize: 13,
-      color: t.text,
-      backgroundColor: t.surfaceElevated,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: t.border,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-    },
-    addValueInput: { minHeight: 60 },
-    addSubmitButton: {
-      backgroundColor: t.accent,
-      borderRadius: 8,
-      paddingVertical: 10,
-      alignItems: 'center',
-    },
-    addSubmitText: {
-      fontFamily: MonospaceFont,
-      fontSize: 13,
-      fontWeight: '700',
-      color: '#FFFFFF',
-    },
 
     // ── Stats ──────────────────────
     statsBar: {
@@ -559,49 +573,71 @@ const createStyles = (t: BackstageTheme) =>
       padding: 8,
     },
 
-    // ── Edit ───────────────────────
-    editContainer: {
-      marginTop: 6,
-      paddingLeft: 18,
-      gap: 8,
+    // ── Editor Modal ───────────────
+    modalContainer: {
+      flex: 1,
+      backgroundColor: t.background,
     },
-    editInput: {
+    modalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderBottomColor: t.border,
+    },
+    modalTitle: {
+      fontFamily: MonospaceFont,
+      fontSize: 16,
+      fontWeight: '700',
+      color: t.text,
+      flex: 1,
+      textAlign: 'center',
+    },
+    modalCancelText: {
+      fontFamily: MonospaceFont,
+      fontSize: 14,
+      color: t.textSecondary,
+      fontWeight: '600',
+    },
+    modalSaveText: {
+      fontFamily: MonospaceFont,
+      fontSize: 14,
+      color: t.accent,
+      fontWeight: '700',
+    },
+    modalBody: {
+      flex: 1,
+    },
+    modalBodyContent: {
+      padding: 16,
+    },
+    modalLabel: {
       fontFamily: MonospaceFont,
       fontSize: 12,
+      fontWeight: '700',
+      color: t.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 6,
+    },
+    modalInput: {
+      fontFamily: MonospaceFont,
+      fontSize: 13,
       color: t.text,
       backgroundColor: t.surfaceElevated,
       borderRadius: 8,
       borderWidth: 1,
-      borderColor: t.accent,
-      paddingHorizontal: 10,
-      paddingVertical: 8,
-      minHeight: 60,
-      lineHeight: 18,
-    },
-    editActions: { flexDirection: 'row', gap: 8, justifyContent: 'flex-end' },
-    cancelButton: {
-      borderRadius: 6,
-      borderWidth: 1,
       borderColor: t.border,
-      paddingHorizontal: 14,
-      paddingVertical: 6,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
     },
-    cancelButtonText: {
-      fontFamily: MonospaceFont,
-      fontSize: 12,
-      fontWeight: '600',
-      color: t.textSecondary,
+    modalInputDisabled: {
+      opacity: 0.5,
     },
-    saveButton: {
-      borderRadius: 6,
-      backgroundColor: t.accent,
-      paddingHorizontal: 14,
-      paddingVertical: 6,
-    },
-    saveButtonText: {
-      fontFamily: MonospaceFont,
-      fontSize: 12,
-      fontWeight: '700',
-      color: '#FFFFFF',
+    modalValueInput: {
+      minHeight: 160,
+      lineHeight: 20,
     },
   })

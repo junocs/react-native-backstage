@@ -139,7 +139,6 @@ export const NetworkTab: React.FC<NetworkTabProps> = ({
         maxToRenderPerBatch={20}
         windowSize={10}
         initialNumToRender={20}
-        removeClippedSubviews={true}
       />
     </View>
   )
