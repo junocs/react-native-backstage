@@ -104,7 +104,6 @@ Pass a `storageAdapter` to render a **Storage** tab that lets you browse, edit, 
 
 ```tsx
 import AsyncStorage from '@react-native-async-storage/async-storage'
-
 ;<Backstage
   storageAdapter={{
     getAllKeys: () => AsyncStorage.getAllKeys(),
@@ -119,7 +118,6 @@ MMKV example:
 
 ```tsx
 import { storage } from './mmkv'
-
 ;<Backstage
   storageAdapter={{
     getAllKeys: () => Promise.resolve(storage.getAllKeys()),
@@ -181,7 +179,7 @@ Add a `bugReport` config to enable one-tap bug reporting. Tapping the 🐛 butto
 | `pillWidth`              | `number`                      | `60`        | Width of the floating pill                      |
 | `pillHeight`             | `number`                      | `32`        | Height of the floating pill                     |
 | `extraTabs`              | `BackstageTab[]`              | `[]`        | Additional custom tabs                          |
-| `bugReport`              | `BugReportConfig`             | `undefined` | Bug report config (shows 🐛 button in header)    |
+| `bugReport`              | `BugReportConfig`             | `undefined` | Bug report config (shows 🐛 button in header)   |
 | `styles`                 | `BackstageStyleOverrides`     | `undefined` | Custom style overrides                          |
 | `children`               | `ReactNode`                   | `undefined` | Extra content in InfoTab                        |
 
