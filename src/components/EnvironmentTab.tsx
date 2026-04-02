@@ -236,6 +236,8 @@ export const EnvironmentTab: React.FC<EnvironmentTabProps> = ({ config }) => {
   const [editorFields, setEditorFields] = useState<Record<string, string>>({})
 
   // ── Load persisted credentials on mount ────────────────────
+  // Merges stored credentials with initialCredentials.
+  // initialCredentials always take priority — deduplication uses values.email.
   useEffect(() => {
     if (!storageAdapter) return
 
@@ -249,10 +251,36 @@ export const EnvironmentTab: React.FC<EnvironmentTabProps> = ({ config }) => {
             try {
               const parsed = JSON.parse(stored) as SavedCredential[]
               if (Array.isArray(parsed)) {
+                // Merge: initialCredentials take priority, matched by values.email
+                const initial = initialCredentials?.[env.key] || []
+                const initialEmails = new Set(
+                  initial.map(c => c.values?.email).filter(Boolean),
+                )
+                // Keep stored credentials that don't conflict with initial ones
+                const storedOnly = parsed.filter(
+                  c => !c.values?.email || !initialEmails.has(c.values.email),
+                )
+                // For initial credentials, prefer stored version's extra fields but keep initial's core values
+                const merged = initial.map(ic => {
+                  const storedMatch = parsed.find(
+                    sc => sc.values?.email && sc.values.email === ic.values?.email,
+                  )
+                  if (storedMatch) {
+                    return { ...storedMatch, name: ic.name, values: { ...storedMatch.values, ...ic.values } }
+                  }
+                  return ic
+                })
+                const finalCreds = [...merged, ...storedOnly]
+
                 setCredentials(prev => ({
                   ...prev,
-                  [env.key]: parsed,
+                  [env.key]: finalCreds,
                 }))
+
+                // Persist the merged result so storage stays in sync
+                storageAdapter
+                  .setItem(STORAGE_KEY_PREFIX + env.key, JSON.stringify(finalCreds))
+                  .catch(() => {})
               }
             } catch {
               // Invalid JSON — ignore
@@ -268,7 +296,7 @@ export const EnvironmentTab: React.FC<EnvironmentTabProps> = ({ config }) => {
     return () => {
       cancelled = true
     }
-  }, [storageAdapter, environments])
+  }, [storageAdapter, environments, initialCredentials])
 
   // ── Persist credentials to storage ─────────────────────────
   const persistCredentials = useCallback(
