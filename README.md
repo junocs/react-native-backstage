@@ -231,6 +231,7 @@ const ref = useRef<BackstageRef>(null)
 ref.current?.open() // Open the panel
 ref.current?.close() // Close the panel
 ref.current?.clearLogs() // Clear all captured logs
+ref.current?.clearNetworkEntries() // Clear all captured network entries
 ref.current?.submitBugReport() // Open bug report composer
 ```
 

@@ -330,6 +330,8 @@ export interface BackstageRef {
   close: () => void
   /** Clear all captured logs */
   clearLogs: () => void
+  /** Clear all captured network entries */
+  clearNetworkEntries: () => void
   /** Open the bug report composer programmatically */
   submitBugReport: () => void
 }

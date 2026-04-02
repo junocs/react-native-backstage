@@ -154,6 +154,7 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
       open: openPanel,
       close: closePanel,
       clearLogs,
+      clearNetworkEntries: clearNetwork,
       submitBugReport: () => {
         if (bugReportConfig) {
           openPanel()
