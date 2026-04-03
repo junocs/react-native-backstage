@@ -286,6 +286,12 @@ TestIDs.environmentTab.environmentCard(key) // 'backstage.environment.card.{key}
 TestIDs.environmentTab.loginButton(key) // 'backstage.environment.{key}.login'
 ```
 
+## Try It
+
+Scan with [Expo Go](https://expo.dev/go) to try the example app on your device:
+
+<img src="./docs/eas-update.svg" width="300" alt="Scan with Expo Go" />
+
 ## License
 
 MIT
