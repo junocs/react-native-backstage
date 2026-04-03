@@ -5,6 +5,15 @@
 
 A zero-dependency developer/QA debug panel for React Native apps. Inspect device info, view state trees, monitor console logs, inspect network requests, and trigger custom actions — all from a sleek in-app panel.
 
+<p align="center">
+  <img src="./docs/info.png" width="200" />
+  <img src="./docs/network.png" width="200" />
+  <img src="./docs/env.png" width="200" />
+  <img src="./docs/storage.png" width="200" />
+  <img src="./docs/logs.png" width="200" />
+  <img src="./docs/bug-report.png" width="200" />
+</p>
+
 ## Features
 
 - 🎯 **Draggable floating pill** — always accessible, repositionable trigger with safe area bounds
