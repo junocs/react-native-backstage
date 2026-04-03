@@ -537,7 +537,7 @@ export default function App() {
             <Text style={styles.statLabel}>Dependencies</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statNumber}>4</Text>
+            <Text style={styles.statNumber}>6</Text>
             <Text style={styles.statLabel}>Tabs</Text>
           </View>
         </View>
@@ -819,7 +819,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     borderRadius: 16,
-    padding: 16,
+    padding: 8,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
