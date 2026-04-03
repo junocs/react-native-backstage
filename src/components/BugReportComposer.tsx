@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   ScrollView,
   Share,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -425,6 +426,7 @@ const createStyles = (t: BackstageTheme) =>
     container: {
       flex: 1,
       backgroundColor: t.background,
+      ...(Platform.OS === 'android' && { paddingTop: StatusBar.currentHeight }),
     },
     header: {
       flexDirection: 'row',

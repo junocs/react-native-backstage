@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import {
   Modal,
+  Platform,
   SafeAreaView,
   StatusBar,
   StyleSheet,
@@ -297,6 +298,10 @@ const createStyles = (t: import('../types').BackstageTheme) =>
     safeArea: {
       flex: 1,
       backgroundColor: t.background,
+      // On Android, SafeAreaView does not inset for the status bar.
+      // StatusBar.currentHeight gives the correct height, including
+      // on Android 15+ edge-to-edge where the bar may be taller.
+      ...(Platform.OS === 'android' && { paddingTop: StatusBar.currentHeight }),
     },
     header: {
       flexDirection: 'row',

@@ -8,6 +8,7 @@ import {
   Platform,
   SafeAreaView,
   ScrollView,
+  StatusBar,
   StyleSheet,
   Text,
   TextInput,
@@ -58,6 +59,7 @@ const EditorModal: React.FC<EditorModalProps> = ({
       animationType="slide"
       transparent={false}
       onRequestClose={onCancel}
+      statusBarTranslucent
     >
       <SafeAreaView style={s.modalContainer}>
         {/* Header */}
@@ -69,7 +71,7 @@ const EditorModal: React.FC<EditorModalProps> = ({
           >
             <Text style={s.modalCancelText}>Cancel</Text>
           </TouchableOpacity>
-          <Text style={s.modalTitle}>{title}</Text>
+          <Text style={s.modalTitle} numberOfLines={1}>{title}</Text>
           <TouchableOpacity
             testID={TestIDs.environmentTab.editorSaveButton}
             onPress={onSave}
@@ -731,6 +733,7 @@ const createStyles = (t: BackstageTheme) =>
     modalContainer: {
       flex: 1,
       backgroundColor: t.background,
+      ...(Platform.OS === 'android' && { paddingTop: StatusBar.currentHeight }),
     },
     modalHeader: {
       flexDirection: 'row',
@@ -748,6 +751,7 @@ const createStyles = (t: BackstageTheme) =>
       color: t.text,
       flex: 1,
       textAlign: 'center',
+      paddingHorizontal: 8,
     },
     modalCancelText: {
       fontFamily: MonospaceFont,
