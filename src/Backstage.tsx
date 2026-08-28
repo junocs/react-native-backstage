@@ -223,7 +223,7 @@ Backstage.displayName = 'Backstage'
 
 const styles = StyleSheet.create({
   container: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: 99999,
     elevation: 99999,
   },
