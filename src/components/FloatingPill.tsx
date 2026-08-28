@@ -243,7 +243,7 @@ const componentStyles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   measurer: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: -1,
     opacity: 0,
   },
