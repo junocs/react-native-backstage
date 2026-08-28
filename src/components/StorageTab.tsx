@@ -77,14 +77,22 @@ const EditorModal: React.FC<EditorModalProps> = ({
   const s = useMemo(() => createStyles(theme), [theme])
 
   return (
-    <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onCancel} statusBarTranslucent>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={false}
+      onRequestClose={onCancel}
+      statusBarTranslucent
+    >
       <SafeAreaView style={s.modalContainer}>
         {/* Header */}
         <View style={s.modalHeader}>
           <TouchableOpacity onPress={onCancel} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Text style={s.modalCancelText}>Cancel</Text>
           </TouchableOpacity>
-          <Text style={s.modalTitle} numberOfLines={1}>{title}</Text>
+          <Text style={s.modalTitle} numberOfLines={1}>
+            {title}
+          </Text>
           <TouchableOpacity onPress={onSave} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
             <Text style={s.modalSaveText}>Save</Text>
           </TouchableOpacity>

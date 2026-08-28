@@ -71,7 +71,9 @@ const EditorModal: React.FC<EditorModalProps> = ({
           >
             <Text style={s.modalCancelText}>Cancel</Text>
           </TouchableOpacity>
-          <Text style={s.modalTitle} numberOfLines={1}>{title}</Text>
+          <Text style={s.modalTitle} numberOfLines={1}>
+            {title}
+          </Text>
           <TouchableOpacity
             testID={TestIDs.environmentTab.editorSaveButton}
             onPress={onSave}
@@ -255,9 +257,7 @@ export const EnvironmentTab: React.FC<EnvironmentTabProps> = ({ config }) => {
               if (Array.isArray(parsed)) {
                 // Merge: initialCredentials take priority, matched by values.email
                 const initial = initialCredentials?.[env.key] || []
-                const initialEmails = new Set(
-                  initial.map(c => c.values?.email).filter(Boolean),
-                )
+                const initialEmails = new Set(initial.map(c => c.values?.email).filter(Boolean))
                 // Keep stored credentials that don't conflict with initial ones
                 const storedOnly = parsed.filter(
                   c => !c.values?.email || !initialEmails.has(c.values.email),
@@ -268,7 +268,11 @@ export const EnvironmentTab: React.FC<EnvironmentTabProps> = ({ config }) => {
                     sc => sc.values?.email && sc.values.email === ic.values?.email,
                   )
                   if (storedMatch) {
-                    return { ...storedMatch, name: ic.name, values: { ...storedMatch.values, ...ic.values } }
+                    return {
+                      ...storedMatch,
+                      name: ic.name,
+                      values: { ...storedMatch.values, ...ic.values },
+                    }
                   }
                   return ic
                 })
