@@ -9,6 +9,9 @@ export type {
   QuickAction,
   FeatureFlag,
   StorageAdapter,
+  QueryLike,
+  QueryCacheLike,
+  QueryClientLike,
   BugReport,
   BugReportConfig,
   BugReportSeverity,
@@ -24,6 +27,11 @@ export type {
 export { LogLevel, NetworkState } from './types'
 export { TestIDs, DarkTheme, LightTheme } from './constants'
 export type { ThemePreference } from './ThemeContext'
+
+// ─── React Query ─────────────────────────────────────────────────────────────
+
+export { useReactQueryState, snapshotReactQueryState } from './use-react-query-state'
+export type { ReactQueryState } from './use-react-query-state'
 
 // ─── Individual Components ───────────────────────────────────────────────────
 

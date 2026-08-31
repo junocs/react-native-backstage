@@ -71,6 +71,16 @@ export const DEFAULT_MAX_LOGS = 500
 export const DEFAULT_MAX_NETWORK_ENTRIES = 500
 export const DEFAULT_MAX_NETWORK_BODY_SIZE = 65536 // 64 KB
 
+// ─── React Query Defaults ────────────────────────────────────────────────────
+
+/**
+ * A query cache is written on every fetch and every socket-driven update, so a per-event snapshot
+ * would rebuild the State Tree at cache-write frequency. One rebuild per second is well past what
+ * anyone can read off a JSON tree, and it collapses the burst of writes a single multi-query
+ * response produces into one pass.
+ */
+export const DEFAULT_QUERY_STATE_THROTTLE_MS = 1000
+
 // ─── Monospace Font ──────────────────────────────────────────────────────────
 
 export const MonospaceFont = Platform.select({

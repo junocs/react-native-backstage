@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from 'react'
@@ -17,6 +18,7 @@ import {
 import { FloatingPill } from './components/FloatingPill'
 import { BackstagePanel } from './components/BackstagePanel'
 import { BackstageThemeProvider } from './ThemeContext'
+import { useReactQueryState } from './use-react-query-state'
 import type { BackstageProps, BackstageRef, LogEntry, NetworkEntry } from './types'
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -35,6 +37,8 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
       featureFlags,
       onToggleFeatureFlag,
       storageAdapter,
+      queryClient,
+      queryStateThrottleMs,
       maxLogs = DEFAULT_MAX_LOGS,
       logFilters,
       onCopyLogs,
@@ -64,6 +68,19 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
 
     const logBuffer = useRef(new LogBuffer(maxLogs))
     const networkBuffer = useRef(new NetworkBuffer(maxNetworkEntries))
+
+    // ── React Query snapshot ──────────────────────────────────
+
+    // Gated on the panel being open: a closed panel subscribes to nothing and builds no snapshot.
+    // Safe for the bug reporter too, which can only be composed from the open panel's header.
+    const reactQuery = useReactQueryState(queryClient, panelVisible, queryStateThrottleMs)
+
+    // `reactQuery` first so it leads the tree, spread second so a caller that already has a
+    // `reactQuery` key in `state` keeps theirs — the panel never clobbers caller data.
+    const stateTree = useMemo(
+      () => (reactQuery ? { reactQuery, ...state } : state),
+      [reactQuery, state],
+    )
 
     // ── Panel controls ────────────────────────────────────────
 
@@ -190,7 +207,7 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
             buildNumber={buildNumber}
             bundleId={bundleId}
             deviceInfo={deviceInfo}
-            state={state}
+            state={stateTree}
             quickActions={quickActions}
             featureFlags={featureFlags}
             onToggleFeatureFlag={onToggleFeatureFlag}
