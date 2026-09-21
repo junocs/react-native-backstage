@@ -19,6 +19,7 @@ A zero-dependency developer/QA debug panel for React Native apps. Inspect device
 - 🎯 **Draggable floating pill** — always accessible, repositionable trigger with safe area bounds
 - 📱 **Device & build info** — OS version, app version, build number, and custom data
 - 🌳 **State tree inspector** — visualize Redux, Zustand, or any store state
+- 🔍 **React Query inspector** — snapshot every cached query's raw payload, staleness, and fetch status
 - 📋 **Console log viewer** — intercepts all console methods with search & filtering
 - 🌐 **Network inspector** — intercepts fetch & XMLHttpRequest with request/response details, headers, body, timing, and copy-as-cURL
 - 🎚 **Feature flag toggle** — render switches to toggle flags in real-time without restarting
@@ -137,6 +138,46 @@ import { storage } from './mmkv'
 />
 ```
 
+## React Query Inspector
+
+Pass your `QueryClient` to add a `reactQuery` node to the State Tree holding every cached query — the **raw** payload as the cache actually stores it, plus the status you cannot see from the payload alone.
+
+```tsx
+import { queryClient } from './services/query'
+;<Backstage queryClient={queryClient} />
+```
+
+The client is read through a structural type the package declares itself, so there is no dependency on `@tanstack/react-query` and the same prop accepts a v4 or a v5 client.
+
+Each query becomes an entry keyed by its query key, holding the payload under `data` and its status under `_meta`:
+
+```
+reactQuery
+  me
+    _meta ▶    { status: 'success', fetchStatus: 'idle', isStale: false, updatedAt: '2:04:11.208 PM' }
+    data  ▶    { id: 'usr_9842', name: 'Jane Developer', … }
+  sites
+    false ▶    { _meta, data }        // ['sites', false]
+    true  ▶    { _meta, data }        // ['sites', true]
+  siteZones
+    site_1 ▶   { _meta, data }        // ['site-zones', 'site_1']
+```
+
+- A kebab-case resource is camelCased, so `['site-zones', id]` becomes a `siteZones` node.
+- Every key element after the first forms the entry label, joined by ` | ` — so `['sites', false]` and `['sites', siteId]` stay distinct siblings instead of collapsing onto each other.
+- A resource cached under both a bare and a keyed form puts the bare payload under `(root)`.
+- Queries with nothing to show are omitted: an unresolved payload, and a key with a `null`/`undefined` part (a disabled observer mounted before its input was known). An **errored** query is kept even with no data — that is usually the thing you opened the panel to see.
+
+The snapshot is rebuilt on a throttle only while the panel is open, so a closed panel subscribes to nothing and costs nothing:
+
+```tsx
+<Backstage
+  queryClient={queryClient}
+  // How often the snapshot is rebuilt while the panel is open. Default: 1000
+  queryStateThrottleMs={1000}
+/>
+```
+
 ## Bug Report
 
 Add a `bugReport` config to enable one-tap bug reporting. Tapping the 🐛 button in the panel header opens a composer that auto-attaches device info, logs, network activity, and state. Reports can be shared via the system share sheet or submitted to a webhook.
@@ -212,6 +253,8 @@ When `storageAdapter` is provided, credentials auto-save on change and auto-load
 | `featureFlags`           | `FeatureFlag[]`               | `[]`        | Feature flags with toggle switches              |
 | `onToggleFeatureFlag`    | `(key, val: boolean) => void` | `undefined` | Callback when a flag is toggled                 |
 | `storageAdapter`         | `StorageAdapter`              | `undefined` | Storage adapter for the Storage Viewer tab      |
+| `queryClient`            | `QueryClientLike`             | `undefined` | React Query client; adds a `reactQuery` node     |
+| `queryStateThrottleMs`   | `number`                      | `1000`      | React Query snapshot rebuild interval (ms)      |
 | `maxLogs`                | `number`                      | `500`       | Maximum logs to retain                          |
 | `logFilters`             | `string[]`                    | `[]`        | Messages to exclude from logs                   |
 | `onCopyLogs`             | `(logs: string) => void`      | `undefined` | Callback when copying logs                      |
@@ -264,6 +307,18 @@ import {
   EnvironmentTab,
   JsonTreeView, // useful standalone for any JSON data
 } from 'rn-backstage'
+```
+
+The React Query snapshot is exported too, for hosts that would rather compose it into their own `state` object than pass the `queryClient` prop:
+
+```tsx
+import { useReactQueryState, snapshotReactQueryState } from 'rn-backstage'
+
+// Throttled, subscribes while `enabled` is true
+const reactQuery = useReactQueryState(queryClient, enabled, 1000)
+
+// Or one-shot, for a bug report or a log line
+const snapshot = snapshotReactQueryState(queryClient)
 ```
 
 ## TestIDs

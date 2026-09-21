@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { StatusBar } from 'expo-status-bar'
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { Backstage } from 'react-native-backstage'
 import type {
   BackstageRef,
@@ -193,9 +194,78 @@ const envStyles = StyleSheet.create({
   },
 })
 
+// ─── React Query Demo ────────────────────────────────────────────────────────
+
+const queryClient = new QueryClient()
+
+const resolveAfter = <T,>(value: T, ms = 400) =>
+  new Promise<T>(resolve => setTimeout(() => resolve(value), ms))
+
+/**
+ * Mounts one query per shape the `reactQuery` node in the State Tree has to handle, so the example
+ * app doubles as the demo for it. Open the panel and expand STATE TREE › reactQuery.
+ */
+function useDemoQueries() {
+  // A bare key — the node holds the entry itself rather than a one-entry map.
+  useQuery({
+    queryKey: ['me'],
+    queryFn: () => resolveAfter({ id: 'usr_9842', name: 'Jane Developer', role: 'admin' }),
+  })
+
+  // Boolean key parts stay distinct siblings instead of collapsing onto each other.
+  useQuery({ queryKey: ['sites', false], queryFn: () => resolveAfter([{ id: 'site_1' }]) })
+  useQuery({
+    queryKey: ['sites', true],
+    queryFn: () => resolveAfter([{ id: 'site_1', name: 'Head Office', zones: 4 }]),
+  })
+
+  // A kebab-case resource, camelCased into a `siteZones` node, keyed by site.
+  useQuery({
+    queryKey: ['site-zones', 'site_1'],
+    queryFn: () => resolveAfter([{ id: 'zone_1', name: 'Living Room', temp: 21.5 }]),
+  })
+  useQuery({
+    queryKey: ['site-zones', 'site_2'],
+    queryFn: () => resolveAfter([{ id: 'zone_9', name: 'Garage', temp: 14.0 }]),
+  })
+
+  // Refetches on an interval, so `_meta.fetchStatus` and `_meta.updatedAt` can be watched changing.
+  useQuery({
+    queryKey: ['server-status'],
+    queryFn: () => resolveAfter({ ok: true, region: 'us-east-1', at: Date.now() }),
+    refetchInterval: 3000,
+    staleTime: 0,
+  })
+
+  // Errors with no data at all — kept in the tree, because that is usually the thing being chased.
+  useQuery({
+    queryKey: ['unit-materials', 'catalog'],
+    queryFn: () => Promise.reject(new Error('Request failed with status 503')),
+    retry: false,
+  })
+
+  // A disabled observer whose input is not known yet. Omitted from the tree: its `undefined` key
+  // part means it is holding a placeholder, not state.
+  useQuery({
+    queryKey: ['contractors', undefined],
+    queryFn: () => resolveAfter([]),
+    enabled: false,
+  })
+}
+
 // ─── Main App ────────────────────────────────────────────────────────────────
 
 export default function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
+  )
+}
+
+function AppContent() {
+  useDemoQueries()
+
   const backstageRef = useRef<BackstageRef>(null)
   const [logCount, setLogCount] = useState(0)
   const [activeEnv, setActiveEnv] = useState('dev')
@@ -559,6 +629,7 @@ export default function App() {
           { label: 'Build Config', value: __DEV__ ? 'Debug' : 'Release' },
         ]}
         state={mockStore}
+        queryClient={queryClient}
         quickActions={[
           {
             title: 'Logout',

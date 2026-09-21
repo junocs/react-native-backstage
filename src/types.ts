@@ -89,6 +89,40 @@ export interface StorageAdapter {
   removeItem: (key: string) => Promise<void>
 }
 
+// ─── React Query ─────────────────────────────────────────────────────────────
+
+/**
+ * The shape of a single cached query, as this package needs to read it.
+ *
+ * Structurally typed rather than imported from `@tanstack/react-query`, which keeps the package
+ * zero-dependency and lets the same prop accept a v4 or a v5 client. Every field beyond `queryKey`
+ * and `state.data` is optional for that reason: where the versions disagree on a name, the field
+ * simply drops out of the tree.
+ */
+export interface QueryLike {
+  queryKey: readonly unknown[]
+  state: {
+    data: unknown
+    status?: string
+    fetchStatus?: string
+    dataUpdatedAt?: number
+    errorUpdateCount?: number
+    error?: unknown
+  }
+  isStale?: () => boolean
+}
+
+/** The part of a react-query `QueryCache` the State Tree reads. */
+export interface QueryCacheLike {
+  getAll: () => readonly QueryLike[]
+  subscribe: (listener: () => void) => () => void
+}
+
+/** The part of a react-query `QueryClient` the State Tree reads. Pass your own client here. */
+export interface QueryClientLike {
+  getQueryCache: () => QueryCacheLike
+}
+
 // ─── Bug Report ──────────────────────────────────────────────────────────────
 
 export type BugReportSeverity = 'low' | 'medium' | 'high' | 'critical'
@@ -248,6 +282,17 @@ export interface BackstageProps {
 
   /** Storage adapter for the Storage Viewer tab (AsyncStorage, MMKV, etc.) */
   storageAdapter?: StorageAdapter
+
+  /**
+   * A react-query `QueryClient`. When provided, the State Tree gains a `reactQuery` node holding
+   * the raw cached payload and status of every query in the cache.
+   */
+  queryClient?: QueryClientLike
+
+  /**
+   * How often the react-query snapshot is rebuilt while the panel is open, in ms. Default: 1000
+   */
+  queryStateThrottleMs?: number
 
   /** Maximum number of logs to retain in memory. Default: 500 */
   maxLogs?: number
