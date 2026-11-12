@@ -304,6 +304,9 @@ export interface BackstageProps {
   onCopyLogs?: (logs: string) => void
 
   /** Called when the Info tab's Log Stream URL is edited; persist it and pass it to `startLogStream` on next launch */
+  /** Show the Info tab's LOG STREAM section. Turn it off in builds that must not stream, e.g. production. Default: true */
+  enableLogStream?: boolean
+
   onLogStreamUrlChange?: (url: string) => void
 
   /** Additional custom tabs beyond Info and Logs */

@@ -197,6 +197,8 @@ startLogStream(storage.getString('logStreamUrl'), { label: 'Pixel 8 · v1.2.3' }
 <Backstage onLogStreamUrlChange={url => storage.set('logStreamUrl', url)} />
 ```
 
+In builds that must never stream (e.g. production), hide the section with `enableLogStream={false}` and skip the `startLogStream` call.
+
 **3. Run the host** (it uses the `ws` package your React Native project already has through Metro):
 
 ```bash
@@ -302,6 +304,7 @@ When `storageAdapter` is provided, credentials auto-save on change and auto-load
 | `logFilters`             | `string[]`                    | `[]`        | Messages to exclude from logs                     |
 | `onCopyLogs`             | `(logs: string) => void`      | `undefined` | Callback when copying logs                        |
 | `onLogStreamUrlChange`   | `(url: string) => void`       | `undefined` | Persist the Log Stream URL edited in the Info tab |
+| `enableLogStream`        | `boolean`                     | `true`      | Show the Info tab's LOG STREAM section            |
 | `enableNetworkInspector` | `boolean`                     | `true`      | Enable/disable network request interception       |
 | `maxNetworkEntries`      | `number`                      | `500`       | Maximum network entries to retain                 |
 | `maxNetworkBodySize`     | `number`                      | `65536`     | Max body size (bytes) to capture per request      |
