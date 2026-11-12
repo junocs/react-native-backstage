@@ -1,6 +1,20 @@
-import React, { useMemo } from 'react'
-import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import React, { useEffect, useMemo, useState } from 'react'
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import { MonospaceFont, TestIDs } from '../constants'
+import {
+  getLogStreamStatus,
+  getLogStreamUrl,
+  setLogStreamUrl,
+  subscribeLogStreamStatus,
+} from '../log-stream'
 import { useBackstageTheme } from '../ThemeContext'
 import { JsonTreeView } from './JsonTreeView'
 import type { AppInfoItem, BackstageStyleOverrides, BackstageTheme, QuickAction } from '../types'
@@ -16,6 +30,7 @@ interface InfoTabProps {
   quickActions?: QuickAction[]
   jsonMaxDepth?: number
   onClosePanel?: () => void
+  onLogStreamUrlChange?: (url: string) => void
   styles?: BackstageStyleOverrides
   children?: React.ReactNode
 }
@@ -31,11 +46,28 @@ export const InfoTab: React.FC<InfoTabProps> = ({
   quickActions = [],
   jsonMaxDepth,
   onClosePanel,
+  onLogStreamUrlChange,
   styles: propStyles,
   children,
 }) => {
   const theme = useBackstageTheme()
   const s = useMemo(() => createStyles(theme), [theme])
+
+  const [logStreamUrl, setLogStreamUrlInput] = useState(getLogStreamUrl)
+  const [logStreamStatus, setLogStreamStatus] = useState(getLogStreamStatus)
+  useEffect(() => subscribeLogStreamStatus(setLogStreamStatus), [])
+
+  const logStreamStatusColor = {
+    off: theme.textMuted,
+    connecting: theme.warning,
+    connected: theme.success,
+  }[logStreamStatus]
+
+  const submitLogStreamUrl = () => {
+    if (logStreamUrl.trim() === getLogStreamUrl()) return
+    setLogStreamUrl(logStreamUrl)
+    onLogStreamUrlChange?.(getLogStreamUrl())
+  }
 
   // Built-in device info from Platform API
   const builtInInfo: AppInfoItem[] = [
@@ -61,6 +93,7 @@ export const InfoTab: React.FC<InfoTabProps> = ({
       style={s.container}
       contentContainerStyle={s.scrollContent}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       {/* ── Device Info Section ─────────────────────────────────── */}
       <View testID={TestIDs.infoTab.deviceInfo} style={s.section}>
@@ -79,6 +112,31 @@ export const InfoTab: React.FC<InfoTabProps> = ({
               {index < allInfo.length - 1 && <View style={s.divider} />}
             </React.Fragment>
           ))}
+        </View>
+      </View>
+
+      {/* ── Log Stream Section ──────────────────────────────────── */}
+      <View testID={TestIDs.infoTab.logStream} style={s.section}>
+        <Text style={[s.sectionTitle, propStyles?.sectionTitleStyle]}>LOG STREAM</Text>
+        <View style={s.card}>
+          <TextInput
+            testID={TestIDs.infoTab.logStreamInput}
+            style={s.logStreamInput}
+            value={logStreamUrl}
+            onChangeText={setLogStreamUrlInput}
+            onEndEditing={submitLogStreamUrl}
+            placeholder="wss://….trycloudflare.com"
+            placeholderTextColor={theme.textMuted}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="url"
+            returnKeyType="done"
+          />
+          <View style={s.divider} />
+          <View style={s.infoRow}>
+            <Text style={[s.infoLabel, propStyles?.infoLabelStyle]}>Status</Text>
+            <Text style={[s.infoValue, { color: logStreamStatusColor }]}>● {logStreamStatus}</Text>
+          </View>
         </View>
       </View>
 
@@ -190,6 +248,13 @@ const createStyles = (t: BackstageTheme) =>
       textAlign: 'right',
       flex: 1,
       marginLeft: 12,
+    },
+    logStreamInput: {
+      fontFamily: MonospaceFont,
+      fontSize: 13,
+      color: t.text,
+      paddingVertical: 8,
+      paddingHorizontal: 4,
     },
     divider: {
       height: 1,

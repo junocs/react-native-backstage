@@ -27,6 +27,14 @@ export type {
 export { LogLevel, NetworkState } from './types'
 export { addLogListener } from './log-interceptor'
 export { addNetworkListener } from './network-interceptor'
+export {
+  startLogStream,
+  setLogStreamUrl,
+  getLogStreamUrl,
+  getLogStreamStatus,
+  subscribeLogStreamStatus,
+} from './log-stream'
+export type { LogStreamStatus } from './log-stream'
 export { TestIDs, DarkTheme, LightTheme } from './constants'
 export type { ThemePreference } from './ThemeContext'
 

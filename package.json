@@ -7,8 +7,12 @@
   "types": "lib/typescript/index.d.ts",
   "react-native": "lib/module/index",
   "source": "src/index",
+  "bin": {
+    "backstage-log-host": "bin/log-host.mjs"
+  },
   "files": [
     "lib",
+    "bin",
     "!**/__tests__",
     "!**/__fixtures__",
     "!**/__mocks__",
