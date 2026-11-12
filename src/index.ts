@@ -25,6 +25,8 @@ export type {
 } from './types'
 
 export { LogLevel, NetworkState } from './types'
+export { addLogListener } from './log-interceptor'
+export { addNetworkListener } from './network-interceptor'
 export { TestIDs, DarkTheme, LightTheme } from './constants'
 export type { ThemePreference } from './ThemeContext'
 

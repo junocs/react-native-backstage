@@ -16,6 +16,12 @@ interface NetworkInterceptorOptions {
 let activeCallback: NetworkCallback | null = null
 let isInstalled = false
 let interceptorOptions: NetworkInterceptorOptions = {}
+const listeners = new Set<NetworkCallback>()
+
+function notify(entry: NetworkEntry): void {
+  listeners.forEach(listener => listener(entry))
+  activeCallback?.(entry)
+}
 
 // Track if we're inside a network callback context.
 // Used by the log interceptor to auto-filter network-related console.logs.
@@ -165,7 +171,7 @@ function installFetchInterceptor(): void {
     }
 
     // Notify: request started
-    activeCallback?.(entry)
+    notify(entry)
 
     try {
       const response = await originalFetch(input, init)
@@ -188,7 +194,7 @@ function installFetchInterceptor(): void {
       }
 
       // Notify: request completed
-      activeCallback?.(entry)
+      notify(entry)
 
       // Mark network context so developer's .then() console.logs are filtered
       enterNetworkContext()
@@ -206,7 +212,7 @@ function installFetchInterceptor(): void {
       entry.error = err instanceof Error ? err.message : String(err)
 
       // Notify: request failed
-      activeCallback?.(entry)
+      notify(entry)
 
       // Re-throw the original error
       throw err
@@ -290,7 +296,7 @@ function installXHRInterceptor(): void {
       }
 
       // Notify: request started
-      activeCallback?.(entry)
+      notify(entry)
 
       // Listen for completion
       xhr.addEventListener('load', () => {
@@ -330,7 +336,7 @@ function installXHRInterceptor(): void {
           // Response may not be text-readable
         }
 
-        activeCallback?.(entry)
+        notify(entry)
         exitNetworkContext()
       })
 
@@ -340,7 +346,7 @@ function installXHRInterceptor(): void {
         entry.duration = entry.endTime - entry.startTime
         entry.state = NetworkState.error
         entry.error = 'Network request failed'
-        activeCallback?.(entry)
+        notify(entry)
         exitNetworkContext()
       })
 
@@ -350,7 +356,7 @@ function installXHRInterceptor(): void {
         entry.duration = entry.endTime - entry.startTime
         entry.state = NetworkState.error
         entry.error = 'Request timed out'
-        activeCallback?.(entry)
+        notify(entry)
         exitNetworkContext()
       })
 
@@ -360,7 +366,7 @@ function installXHRInterceptor(): void {
         entry.duration = entry.endTime - entry.startTime
         entry.state = NetworkState.error
         entry.error = 'Request aborted'
-        activeCallback?.(entry)
+        notify(entry)
         exitNetworkContext()
       })
 
@@ -385,22 +391,39 @@ export function installNetworkInterceptor(
   callback: NetworkCallback,
   options: NetworkInterceptorOptions = {},
 ): void {
-  if (isInstalled) {
-    // Update callback and options if already installed
-    activeCallback = callback
-    interceptorOptions = options
-    return
-  }
-
   activeCallback = callback
   interceptorOptions = options
+  patchNetwork()
+}
+
+export function uninstallNetworkInterceptor(): void {
+  activeCallback = null
+  if (listeners.size === 0) restoreNetwork()
+}
+
+/**
+ * Subscribes to every fetch/XHR update from now on (once when sent, again when it completes or fails),
+ * whether or not a `<Backstage>` is mounted. Call it at app startup to stream requests off the device.
+ * Returns an unsubscribe function.
+ */
+export function addNetworkListener(listener: NetworkCallback): () => void {
+  listeners.add(listener)
+  patchNetwork()
+  return () => {
+    listeners.delete(listener)
+    if (!activeCallback && listeners.size === 0) restoreNetwork()
+  }
+}
+
+function patchNetwork(): void {
+  if (isInstalled) return
   isInstalled = true
 
   installFetchInterceptor()
   installXHRInterceptor()
 }
 
-export function uninstallNetworkInterceptor(): void {
+function restoreNetwork(): void {
   if (!isInstalled) return
 
   // Restore originals
@@ -413,7 +436,6 @@ export function uninstallNetworkInterceptor(): void {
     originals.XMLHttpRequest = null
   }
 
-  activeCallback = null
   isInstalled = false
 }
 

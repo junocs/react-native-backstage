@@ -19,6 +19,8 @@ type LogCallback = (entry: LogEntry) => void
 let activeCallback: LogCallback | null = null
 let isInstalled = false
 let autoFilterNetwork = false
+let activeFilters: string[] = []
+const listeners = new Set<LogCallback>()
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -61,15 +63,33 @@ export function installInterceptor(
   filters: string[] = [],
   options: { autoFilterNetworkLogs?: boolean } = {},
 ): void {
-  if (isInstalled) {
-    // Just update callback if already installed
-    activeCallback = callback
-    autoFilterNetwork = options.autoFilterNetworkLogs ?? true
-    return
-  }
-
   activeCallback = callback
+  activeFilters = filters
   autoFilterNetwork = options.autoFilterNetworkLogs ?? true
+  patchConsole()
+}
+
+export function uninstallInterceptor(): void {
+  activeCallback = null
+  if (listeners.size === 0) restoreConsole()
+}
+
+/**
+ * Subscribes to every console call from now on, whether or not a `<Backstage>` is mounted. Listeners
+ * see each entry before `logFilters` and `autoFilterNetworkLogs`, which only shape the Logs tab — call
+ * this at app startup to stream logs off the device. Returns an unsubscribe function.
+ */
+export function addLogListener(listener: LogCallback): () => void {
+  listeners.add(listener)
+  patchConsole()
+  return () => {
+    listeners.delete(listener)
+    if (!activeCallback && listeners.size === 0) restoreConsole()
+  }
+}
+
+function patchConsole(): void {
+  if (isInstalled) return
   isInstalled = true
 
   const levels: Array<[LogLevel, keyof typeof originalConsole]> = [
@@ -85,22 +105,23 @@ export function installInterceptor(
       // Always forward to original console
       originalConsole[method](message, ...optionalParams)
 
-      // Check filters
-      if (!shouldLog(message, filters)) return
+      // Logs tab skips filtered messages and logs from inside network callbacks (e.g., Axios interceptors)
+      const callback =
+        activeCallback &&
+        shouldLog(message, activeFilters) &&
+        !(autoFilterNetwork && isInsideNetworkCallback())
+          ? activeCallback
+          : null
+      if (!callback && listeners.size === 0) return
 
-      // Skip logs from inside network callbacks (e.g., Axios interceptors)
-      if (autoFilterNetwork && isInsideNetworkCallback()) return
-
-      // Create log entry and notify
-      if (activeCallback) {
-        const entry = createLogEntry(level, message, optionalParams)
-        activeCallback(entry)
-      }
+      const entry = createLogEntry(level, message, optionalParams)
+      listeners.forEach(listener => listener(entry))
+      callback?.(entry)
     }
   }
 }
 
-export function uninstallInterceptor(): void {
+function restoreConsole(): void {
   if (!isInstalled) return
 
   console.log = originalConsole.log
@@ -109,7 +130,6 @@ export function uninstallInterceptor(): void {
   console.warn = originalConsole.warn
   console.error = originalConsole.error
 
-  activeCallback = null
   isInstalled = false
 }
 
