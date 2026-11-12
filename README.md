@@ -202,9 +202,12 @@ In builds that must never stream (e.g. production), hide the section with `enabl
 **3. Run the host** (it uses the `ws` package your React Native project already has through Metro):
 
 ```bash
-npx backstage-log-host            # ws://<your LAN IP>:8099 on the same Wi-Fi
-npx backstage-log-host --compact  # one line per successful request
+npx backstage-log-host                  # ws://<your LAN IP>:8099 on the same Wi-Fi
+npx backstage-log-host --compact        # one line per successful request
+npx backstage-log-host --max-lines=40   # cap each body or logged object (printed in full by default)
 ```
+
+Network bodies are captured up to `maxNetworkBodySize` (64 KB by default) on the device, so raise that prop if responses run larger.
 
 For a device on another network, put a tunnel in front of it and enter the printed URL as `wss://…`:
 
