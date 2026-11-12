@@ -80,6 +80,36 @@ export function formatLogMessage(message: unknown, optionalParams?: unknown[]): 
   return parts.join(' ')
 }
 
+/**
+ * Splits a console call into its text and the objects logged with it, by the same rules as
+ * `formatLogMessage`, so objects can be shown as structured data instead of inline JSON.
+ */
+export function splitLogParts(
+  message: unknown,
+  optionalParams: unknown[] = [],
+): { text: string; objects: unknown[] } {
+  const text: string[] = []
+  const objects: unknown[] = []
+
+  const add = (value: unknown, isMessage: boolean) => {
+    if (typeof value === 'string') {
+      if (isMessage) text.push(value.replace(/%c/g, '').trim())
+      else if (!isColorString(value)) text.push(value)
+    } else if (value instanceof Error) {
+      if (isMessage) text.push(`${value.name}: ${value.message}`)
+      else objects.push({ name: value.name, message: value.message, stack: value.stack })
+    } else if (typeof value === 'object' && value !== null) {
+      objects.push(value)
+    } else {
+      text.push(String(value))
+    }
+  }
+
+  add(message, true)
+  optionalParams.forEach(param => add(param, false))
+  return { text: text.join(' '), objects }
+}
+
 function isColorString(str: string): boolean {
   return (
     str.includes('color:') ||

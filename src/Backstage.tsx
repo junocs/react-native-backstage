@@ -42,6 +42,7 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
       maxLogs = DEFAULT_MAX_LOGS,
       logFilters,
       onCopyLogs,
+      onLogStreamUrlChange,
       extraTabs,
       children,
       styles: propStyles,
@@ -224,6 +225,7 @@ export const Backstage = forwardRef<BackstageRef, BackstageProps>(
             environmentConfig={environmentConfig}
             bugReportConfig={bugReportConfig}
             bugReportOpenerRef={openBugReportRef}
+            onLogStreamUrlChange={onLogStreamUrlChange}
             styles={propStyles}
           >
             {children}

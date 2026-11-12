@@ -303,6 +303,9 @@ export interface BackstageProps {
   /** Callback triggered when user copies logs */
   onCopyLogs?: (logs: string) => void
 
+  /** Called when the Info tab's Log Stream URL is edited; persist it and pass it to `startLogStream` on next launch */
+  onLogStreamUrlChange?: (url: string) => void
+
   /** Additional custom tabs beyond Info and Logs */
   extraTabs?: BackstageTab[]
 

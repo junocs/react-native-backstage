@@ -120,6 +120,8 @@ export const TestIDs = {
   infoTab: {
     container: 'backstage.info',
     deviceInfo: 'backstage.info.device',
+    logStream: 'backstage.info.log-stream',
+    logStreamInput: 'backstage.info.log-stream.input',
     stateTree: 'backstage.info.state-tree',
     quickActions: 'backstage.info.quick-actions',
     /** Dynamic: backstage.info.action.{index} */

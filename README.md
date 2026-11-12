@@ -164,7 +164,7 @@ reactQuery
 ```
 
 - A kebab-case resource is camelCased, so `['site-zones', id]` becomes a `siteZones` node.
-- Every key element after the first forms the entry label, joined by ` | ` — so `['sites', false]` and `['sites', siteId]` stay distinct siblings instead of collapsing onto each other.
+- Every key element after the first forms the entry label, joined by `|` — so `['sites', false]` and `['sites', siteId]` stay distinct siblings instead of collapsing onto each other.
 - A resource cached under both a bare and a keyed form puts the bare payload under `(root)`.
 - Queries with nothing to show are omitted: an unresolved payload, and a key with a `null`/`undefined` part (a disabled observer mounted before its input was known). An **errored** query is kept even with no data — that is usually the thing you opened the panel to see.
 
@@ -176,6 +176,49 @@ The snapshot is rebuilt on a throttle only while the panel is open, so a closed 
   // How often the snapshot is rebuilt while the panel is open. Default: 1000
   queryStateThrottleMs={1000}
 />
+```
+
+## Log Stream
+
+Follow a device's logs and network requests live in your terminal, even when it's a QA tester's phone on another network. Every console call and fetch/XHR request is streamed over a WebSocket — including the ones `logFilters` and `autoFilterNetworkLogs` hide from the Logs tab.
+
+**1. Start it before the app is imported**, so logs from JS startup are captured. It's a no-op until a URL is set:
+
+```tsx
+// index.js
+import { startLogStream } from 'rn-backstage'
+
+startLogStream(storage.getString('logStreamUrl'), { label: 'Pixel 8 · v1.2.3' })
+```
+
+**2. Persist the URL** entered in the Info tab's **LOG STREAM** section:
+
+```tsx
+<Backstage onLogStreamUrlChange={url => storage.set('logStreamUrl', url)} />
+```
+
+**3. Run the host** (it uses the `ws` package your React Native project already has through Metro):
+
+```bash
+npx backstage-log-host            # ws://<your LAN IP>:8099 on the same Wi-Fi
+npx backstage-log-host --compact  # one line per successful request
+```
+
+For a device on another network, put a tunnel in front of it and enter the printed URL as `wss://…`:
+
+```bash
+cloudflared tunnel --url http://localhost:8099
+```
+
+`Authorization` request headers are stripped before anything leaves the device.
+
+To stream somewhere else, `addLogListener` and `addNetworkListener` give you the same unfiltered entries:
+
+```tsx
+import { addLogListener, addNetworkListener } from 'rn-backstage'
+
+const unsubscribeLogs = addLogListener(entry => send(entry))
+const unsubscribeNetwork = addNetworkListener(entry => send(entry)) // once when sent, again when done
 ```
 
 ## Bug Report
@@ -240,40 +283,41 @@ When `storageAdapter` is provided, credentials auto-save on change and auto-load
 
 ## Props
 
-| Prop                     | Type                          | Default     | Description                                     |
-| ------------------------ | ----------------------------- | ----------- | ----------------------------------------------- |
-| `visible`                | `boolean`                     | `true`      | Show/hide the floating pill                     |
-| `theme`                  | `'light' \| 'dark' \| 'auto'` | `'auto'`    | Theme preference; auto follows device setting   |
-| `appVersion`             | `string`                      | `undefined` | App version to display                          |
-| `buildNumber`            | `string`                      | `undefined` | Build number                                    |
-| `bundleId`               | `string`                      | `undefined` | Bundle identifier                               |
-| `deviceInfo`             | `AppInfoItem[]`               | `[]`        | Additional device/app info rows                 |
-| `state`                  | `object`                      | `undefined` | State tree to inspect                           |
-| `quickActions`           | `QuickAction[]`               | `[]`        | Custom action buttons                           |
-| `featureFlags`           | `FeatureFlag[]`               | `[]`        | Feature flags with toggle switches              |
-| `onToggleFeatureFlag`    | `(key, val: boolean) => void` | `undefined` | Callback when a flag is toggled                 |
-| `storageAdapter`         | `StorageAdapter`              | `undefined` | Storage adapter for the Storage Viewer tab      |
-| `queryClient`            | `QueryClientLike`             | `undefined` | React Query client; adds a `reactQuery` node     |
-| `queryStateThrottleMs`   | `number`                      | `1000`      | React Query snapshot rebuild interval (ms)      |
-| `maxLogs`                | `number`                      | `500`       | Maximum logs to retain                          |
-| `logFilters`             | `string[]`                    | `[]`        | Messages to exclude from logs                   |
-| `onCopyLogs`             | `(logs: string) => void`      | `undefined` | Callback when copying logs                      |
-| `enableNetworkInspector` | `boolean`                     | `true`      | Enable/disable network request interception     |
-| `maxNetworkEntries`      | `number`                      | `500`       | Maximum network entries to retain               |
-| `maxNetworkBodySize`     | `number`                      | `65536`     | Max body size (bytes) to capture per request    |
-| `networkFilters`         | `string[]`                    | `[]`        | URL substrings to exclude from capture          |
-| `autoFilterNetworkLogs`  | `boolean`                     | `true`      | Auto-filter network callback logs from Logs tab |
-| `jsonMaxDepth`           | `number`                      | `10`        | Max nesting depth for all JSON tree views       |
-| `initialX`               | `number`                      | `undefined` | Initial X position for the floating pill        |
-| `initialY`               | `number`                      | `undefined` | Initial Y position for the floating pill        |
-| `pillText`               | `string`                      | `undefined` | Text on the pill (defaults to version or "DEV") |
-| `pillWidth`              | `number`                      | `60`        | Width of the floating pill                      |
-| `pillHeight`             | `number`                      | `32`        | Height of the floating pill                     |
-| `extraTabs`              | `BackstageTab[]`              | `[]`        | Additional custom tabs                          |
-| `bugReport`              | `BugReportConfig`             | `undefined` | Bug report config (shows 🐛 button in header)   |
-| `environmentConfig`      | `EnvironmentConfig`           | `undefined` | Environment switcher config (shows 🔐 Env tab)  |
-| `styles`                 | `BackstageStyleOverrides`     | `undefined` | Custom style overrides                          |
-| `children`               | `ReactNode`                   | `undefined` | Extra content in InfoTab                        |
+| Prop                     | Type                          | Default     | Description                                       |
+| ------------------------ | ----------------------------- | ----------- | ------------------------------------------------- |
+| `visible`                | `boolean`                     | `true`      | Show/hide the floating pill                       |
+| `theme`                  | `'light' \| 'dark' \| 'auto'` | `'auto'`    | Theme preference; auto follows device setting     |
+| `appVersion`             | `string`                      | `undefined` | App version to display                            |
+| `buildNumber`            | `string`                      | `undefined` | Build number                                      |
+| `bundleId`               | `string`                      | `undefined` | Bundle identifier                                 |
+| `deviceInfo`             | `AppInfoItem[]`               | `[]`        | Additional device/app info rows                   |
+| `state`                  | `object`                      | `undefined` | State tree to inspect                             |
+| `quickActions`           | `QuickAction[]`               | `[]`        | Custom action buttons                             |
+| `featureFlags`           | `FeatureFlag[]`               | `[]`        | Feature flags with toggle switches                |
+| `onToggleFeatureFlag`    | `(key, val: boolean) => void` | `undefined` | Callback when a flag is toggled                   |
+| `storageAdapter`         | `StorageAdapter`              | `undefined` | Storage adapter for the Storage Viewer tab        |
+| `queryClient`            | `QueryClientLike`             | `undefined` | React Query client; adds a `reactQuery` node      |
+| `queryStateThrottleMs`   | `number`                      | `1000`      | React Query snapshot rebuild interval (ms)        |
+| `maxLogs`                | `number`                      | `500`       | Maximum logs to retain                            |
+| `logFilters`             | `string[]`                    | `[]`        | Messages to exclude from logs                     |
+| `onCopyLogs`             | `(logs: string) => void`      | `undefined` | Callback when copying logs                        |
+| `onLogStreamUrlChange`   | `(url: string) => void`       | `undefined` | Persist the Log Stream URL edited in the Info tab |
+| `enableNetworkInspector` | `boolean`                     | `true`      | Enable/disable network request interception       |
+| `maxNetworkEntries`      | `number`                      | `500`       | Maximum network entries to retain                 |
+| `maxNetworkBodySize`     | `number`                      | `65536`     | Max body size (bytes) to capture per request      |
+| `networkFilters`         | `string[]`                    | `[]`        | URL substrings to exclude from capture            |
+| `autoFilterNetworkLogs`  | `boolean`                     | `true`      | Auto-filter network callback logs from Logs tab   |
+| `jsonMaxDepth`           | `number`                      | `10`        | Max nesting depth for all JSON tree views         |
+| `initialX`               | `number`                      | `undefined` | Initial X position for the floating pill          |
+| `initialY`               | `number`                      | `undefined` | Initial Y position for the floating pill          |
+| `pillText`               | `string`                      | `undefined` | Text on the pill (defaults to version or "DEV")   |
+| `pillWidth`              | `number`                      | `60`        | Width of the floating pill                        |
+| `pillHeight`             | `number`                      | `32`        | Height of the floating pill                       |
+| `extraTabs`              | `BackstageTab[]`              | `[]`        | Additional custom tabs                            |
+| `bugReport`              | `BugReportConfig`             | `undefined` | Bug report config (shows 🐛 button in header)     |
+| `environmentConfig`      | `EnvironmentConfig`           | `undefined` | Environment switcher config (shows 🔐 Env tab)    |
+| `styles`                 | `BackstageStyleOverrides`     | `undefined` | Custom style overrides                            |
+| `children`               | `ReactNode`                   | `undefined` | Extra content in InfoTab                          |
 
 ## Ref Methods
 
