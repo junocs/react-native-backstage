@@ -3,6 +3,7 @@
  * Prints the log stream from devices running `startLogStream` (src/log-stream.ts).
  *
  *   npx backstage-log-host [port] [--compact]          # default 8099; --compact = one line per request and log
+ *   npx backstage-log-host --max-lines=40              # cap each body or object; full by default
  *   cloudflared tunnel --url http://localhost:8099     # remote device: enter the printed URL as wss://… in
  *                                                      # Backstage → Info → LOG STREAM
  *
@@ -22,7 +23,8 @@ try {
 const args = process.argv.slice(2)
 const compact = args.includes('--compact')
 const port = Number(args.find(arg => !arg.startsWith('--')) ?? 8099)
-const MAX_BODY_LINES = 40
+const maxLinesArg = args.find(arg => arg.startsWith('--max-lines='))
+const maxLines = maxLinesArg ? Number(maxLinesArg.split('=')[1]) : Infinity
 
 const color = (code, text) => `\x1b[${code}m${text}\x1b[0m`
 const badge = (code, text) => color(code, ` ${text.padEnd(5)} `)
@@ -71,9 +73,8 @@ const prettyBody = body => {
   } catch {
     lines = body.split('\n')
   }
-  const shown = lines.slice(0, MAX_BODY_LINES)
-  if (lines.length > MAX_BODY_LINES)
-    shown.push(color(90, `… ${lines.length - MAX_BODY_LINES} more lines`))
+  const shown = lines.slice(0, maxLines)
+  if (lines.length > maxLines) shown.push(color(90, `… ${lines.length - maxLines} more lines`))
   return shown
 }
 
@@ -128,7 +129,7 @@ new WebSocket.Server({ port }).on('connection', socket => {
       const text = entry.objects ? entry.text : entry.message
       const api = objects.length > 0 && apiCall(objects[0])
       const isApiLog = api && entry.level !== 'warn' && entry.level !== 'error'
-      const level = isApiLog ? API_LOG : (LEVELS[entry.level] ?? LEVELS.log)
+      const level = isApiLog ? API_LOG : LEVELS[entry.level] ?? LEVELS.log
       const jsonLines = objects.map(object => JSON.stringify(object))
       // API dumps get a summary line; the full dump goes below it, or is dropped with --compact
       const block =
