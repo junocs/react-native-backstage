@@ -76,6 +76,7 @@ interface BackstagePanelProps {
   bugReportOpenerRef?: React.MutableRefObject<(() => void) | null>
 
   // Log stream
+  enableLogStream?: boolean
   onLogStreamUrlChange?: (url: string) => void
 
   // Styling
@@ -124,6 +125,7 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
   environmentConfig,
   bugReportConfig,
   bugReportOpenerRef,
+  enableLogStream,
   onLogStreamUrlChange,
   styles: propStyles,
   children,
@@ -176,6 +178,7 @@ export const BackstagePanel: React.FC<BackstagePanelProps> = ({
             quickActions={quickActions}
             jsonMaxDepth={jsonMaxDepth}
             onClosePanel={onClose}
+            enableLogStream={enableLogStream}
             onLogStreamUrlChange={onLogStreamUrlChange}
             styles={propStyles}
           >

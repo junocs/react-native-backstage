@@ -30,6 +30,7 @@ interface InfoTabProps {
   quickActions?: QuickAction[]
   jsonMaxDepth?: number
   onClosePanel?: () => void
+  enableLogStream?: boolean
   onLogStreamUrlChange?: (url: string) => void
   styles?: BackstageStyleOverrides
   children?: React.ReactNode
@@ -46,6 +47,7 @@ export const InfoTab: React.FC<InfoTabProps> = ({
   quickActions = [],
   jsonMaxDepth,
   onClosePanel,
+  enableLogStream = true,
   onLogStreamUrlChange,
   styles: propStyles,
   children,
@@ -116,29 +118,33 @@ export const InfoTab: React.FC<InfoTabProps> = ({
       </View>
 
       {/* ── Log Stream Section ──────────────────────────────────── */}
-      <View testID={TestIDs.infoTab.logStream} style={s.section}>
-        <Text style={[s.sectionTitle, propStyles?.sectionTitleStyle]}>LOG STREAM</Text>
-        <View style={s.card}>
-          <TextInput
-            testID={TestIDs.infoTab.logStreamInput}
-            style={s.logStreamInput}
-            value={logStreamUrl}
-            onChangeText={setLogStreamUrlInput}
-            onEndEditing={submitLogStreamUrl}
-            placeholder="wss://….trycloudflare.com"
-            placeholderTextColor={theme.textMuted}
-            autoCapitalize="none"
-            autoCorrect={false}
-            keyboardType="url"
-            returnKeyType="done"
-          />
-          <View style={s.divider} />
-          <View style={s.infoRow}>
-            <Text style={[s.infoLabel, propStyles?.infoLabelStyle]}>Status</Text>
-            <Text style={[s.infoValue, { color: logStreamStatusColor }]}>● {logStreamStatus}</Text>
+      {enableLogStream && (
+        <View testID={TestIDs.infoTab.logStream} style={s.section}>
+          <Text style={[s.sectionTitle, propStyles?.sectionTitleStyle]}>LOG STREAM</Text>
+          <View style={s.card}>
+            <TextInput
+              testID={TestIDs.infoTab.logStreamInput}
+              style={s.logStreamInput}
+              value={logStreamUrl}
+              onChangeText={setLogStreamUrlInput}
+              onEndEditing={submitLogStreamUrl}
+              placeholder="wss://….trycloudflare.com"
+              placeholderTextColor={theme.textMuted}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="url"
+              returnKeyType="done"
+            />
+            <View style={s.divider} />
+            <View style={s.infoRow}>
+              <Text style={[s.infoLabel, propStyles?.infoLabelStyle]}>Status</Text>
+              <Text style={[s.infoValue, { color: logStreamStatusColor }]}>
+                ● {logStreamStatus}
+              </Text>
+            </View>
           </View>
         </View>
-      </View>
+      )}
 
       {/* ── State Tree Section ──────────────────────────────────── */}
       {state && Object.keys(state).length > 0 && (
