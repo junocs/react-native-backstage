@@ -18,8 +18,8 @@ interface NetworkItemProps {
 
 // ─── Status Badge Config ─────────────────────────────────────────────────────
 
-function getStatusConfig(
-  entry: NetworkEntry,
+export function getStatusConfig(
+  entry: Pick<NetworkEntry, 'state' | 'status'>,
   t: BackstageTheme,
 ): { label: string; color: string; bgColor: string; rowBg: string } {
   if (entry.state === NetworkState.pending) {
@@ -61,7 +61,7 @@ function getStatusConfig(
 
 // ─── Method Badge Colors ─────────────────────────────────────────────────────
 
-function getMethodColor(method: string, t: BackstageTheme): string {
+export function getMethodColor(method: string, t: BackstageTheme): string {
   switch (method) {
     case 'GET':
       return t.success

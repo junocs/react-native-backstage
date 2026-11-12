@@ -2,10 +2,13 @@ import React, { useCallback, useMemo, useState } from 'react'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { MonospaceFont, TestIDs } from '../constants'
 import { useBackstageTheme } from '../ThemeContext'
-import { LogLevel } from '../types'
+import { LogLevel, NetworkState } from '../types'
 import type { LogEntry, BackstageStyleOverrides, BackstageTheme } from '../types'
+import { describeApiCall } from '../utils/api-call'
 import { formatTimestamp } from '../utils/formatTimestamp'
+import { safeStringify, splitLogParts } from '../utils/stringify'
 import { JsonTreeView } from './JsonTreeView'
+import { getMethodColor, getStatusConfig } from './NetworkItem'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -51,6 +54,53 @@ function getBadgeConfig(
   }
 }
 
+// ─── JSON Preview ────────────────────────────────────────────────────────────
+
+// JsonTreeView's palette, so the collapsed preview and the expanded tree read the same
+const JSON_TOKEN =
+  /("(?:[^"\\]|\\.)*")(\s*:)?|\b(true|false)\b|\bnull\b|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g
+const PREVIEW_CHARS = 400
+
+const JsonPreview: React.FC<{ value: unknown; style: object }> = ({ value, style }) => {
+  const theme = useBackstageTheme()
+  const spans = useMemo(() => {
+    const json = safeStringify(value, 0).slice(0, PREVIEW_CHARS)
+    const result: Array<{ text: string; color: string }> = []
+    let last = 0
+    JSON_TOKEN.lastIndex = 0
+    for (let match = JSON_TOKEN.exec(json); match; match = JSON_TOKEN.exec(json)) {
+      if (match.index > last)
+        result.push({ text: json.slice(last, match.index), color: theme.textSecondary })
+      const [token, string, colon, boolean] = match
+      if (string && colon) {
+        result.push({ text: string, color: '#E06C75' }, { text: colon, color: theme.textSecondary })
+      } else {
+        const color = string
+          ? '#98C379'
+          : boolean
+            ? '#C678DD'
+            : token === 'null'
+              ? theme.textMuted
+              : '#61AFEF'
+        result.push({ text: token, color })
+      }
+      last = match.index + token.length
+    }
+    if (last < json.length) result.push({ text: json.slice(last), color: theme.textSecondary })
+    return result
+  }, [value, theme])
+
+  return (
+    <Text style={style} numberOfLines={2}>
+      {spans.map((span, index) => (
+        <Text key={index} style={{ color: span.color }}>
+          {span.text}
+        </Text>
+      ))}
+    </Text>
+  )
+}
+
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export const LogItem: React.FC<LogItemProps> = React.memo(
@@ -58,8 +108,23 @@ export const LogItem: React.FC<LogItemProps> = React.memo(
     const theme = useBackstageTheme()
     const s = useMemo(() => createStyles(theme), [theme])
     const [expanded, setExpanded] = useState(false)
-    const badge = getBadgeConfig(item.level, theme)
     const hasData = item.data !== undefined
+
+    // Objects logged with the message are shown as data, not as JSON inlined into the text
+    const parts = useMemo(() => {
+      if (!hasData) return null
+      const { message, params } = item.data as { message: unknown; params: unknown[] }
+      return splitLogParts(message, params)
+    }, [item.data, hasData])
+    const objects = parts?.objects ?? []
+    const messageText = parts && objects.length > 0 ? parts.text : item.message
+    const api = objects.length > 0 ? describeApiCall(objects[0]) : null
+    const isApiLog = api && item.level !== LogLevel.warn && item.level !== LogLevel.error
+
+    const levelBadge = getBadgeConfig(item.level, theme)
+    const badge = isApiLog
+      ? { ...levelBadge, color: theme.accent, bgColor: theme.accentDim }
+      : levelBadge
 
     const toggleExpand = useCallback(() => {
       setExpanded(prev => !prev)
@@ -105,17 +170,54 @@ export const LogItem: React.FC<LogItemProps> = React.memo(
           )}
         </View>
 
-        <Text
-          testID={TestIDs.logItem.message(item.id)}
-          style={[s.message, propStyles?.logMessageStyle]}
-          numberOfLines={expanded ? undefined : 3}
-        >
-          {item.message}
-        </Text>
+        {messageText.length > 0 && (
+          <Text
+            testID={TestIDs.logItem.message(item.id)}
+            style={[s.message, propStyles?.logMessageStyle]}
+            numberOfLines={expanded ? undefined : 3}
+          >
+            {messageText}
+          </Text>
+        )}
+
+        {api && (
+          <Text style={s.apiSummary} numberOfLines={expanded ? undefined : 1}>
+            <Text style={{ color: theme.accent }}>↳ </Text>
+            <Text style={[s.apiMethod, { color: getMethodColor(api.method, theme) }]}>
+              {api.method}
+            </Text>
+            {api.status !== undefined && (
+              <Text
+                style={[
+                  s.apiMethod,
+                  {
+                    color: getStatusConfig(
+                      { state: NetworkState.completed, status: api.status },
+                      theme,
+                    ).color,
+                  },
+                ]}
+              >
+                {` ${api.status}`}
+              </Text>
+            )}
+            <Text style={{ color: theme.textSecondary }}>{` ${api.url}`}</Text>
+          </Text>
+        )}
+
+        {!expanded && !api && objects.length > 0 && (
+          <JsonPreview value={objects.length === 1 ? objects[0] : objects} style={s.jsonPreview} />
+        )}
 
         {expanded && hasData && (
           <View testID={TestIDs.logItem.dataContainer(item.id)} style={s.dataContainer}>
-            <JsonTreeView data={item.data} hideRoot maxDepth={jsonMaxDepth} />
+            {objects.length > 0 ? (
+              objects.map((object, index) => (
+                <JsonTreeView key={index} data={object} hideRoot maxDepth={jsonMaxDepth} />
+              ))
+            ) : (
+              <JsonTreeView data={item.data} hideRoot maxDepth={jsonMaxDepth} />
+            )}
           </View>
         )}
 
@@ -142,6 +244,9 @@ const createStyles = (t: BackstageTheme) =>
     copyButton: { padding: 4 },
     copyButtonText: { fontSize: 16, color: t.textMuted },
     message: { fontFamily: MonospaceFont, fontSize: 12, color: t.text, lineHeight: 18 },
+    apiSummary: { fontFamily: MonospaceFont, fontSize: 12, lineHeight: 18, marginTop: 2 },
+    apiMethod: { fontWeight: '700' },
+    jsonPreview: { fontFamily: MonospaceFont, fontSize: 12, lineHeight: 18, marginTop: 2 },
     dataContainer: { marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: t.border },
     expandHint: {
       fontFamily: MonospaceFont,
